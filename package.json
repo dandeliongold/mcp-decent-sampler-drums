@@ -1,0 +1,31 @@
+{
+  "name": "@dandeliongold/mcp-decent-sampler-drums",
+  "version": "0.0.1",
+  "description": "A Model Context Protocol server for building Decent Sampler drum kit sample presets.",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dandeliongold/mcp-decent-sampler-drums.git"
+  },
+  "license": "MIT",
+  "bin": {
+    "decent-sampler-drums": "./build/index.js"
+  },
+  "files": [
+    "build"
+  ],
+  "scripts": {
+    "build": "tsc && node -e \"require('fs').chmodSync('build/index.js', '755')\"",
+    "prepare": "npm run build",
+    "watch": "tsc --watch",
+    "inspector": "npx @modelcontextprotocol/inspector build/index.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.4.1",
+    "axios": "^1.7.9"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.24",
+    "typescript": "^5.3.3"
+  }
+}
