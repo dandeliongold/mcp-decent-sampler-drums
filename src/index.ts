@@ -5,7 +5,23 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import {
   CallToolRequestSchema,
   ListToolsRequestSchema,
+  ErrorCode,
+  McpError,
 } from "@modelcontextprotocol/sdk/types.js";
+import { promisify } from 'util';
+import wavFileInfo from 'wav-file-info';
+
+const getWavInfo = promisify((path: string, callback: (err: Error | null, info: any) => void) => {
+  wavFileInfo.infoByFilename(path, callback);
+});
+
+interface WavAnalysis {
+  path: string;
+  sampleLength: number;  // For end marker
+  sampleRate: number;
+  channels: number;
+  bitDepth: number;
+}
 
 interface DrumKitConfig {
   globalSettings: {
@@ -23,7 +39,8 @@ interface DrumKitConfig {
     rootNote: number,
     samples: {
       path: string,
-      volume?: string
+      volume?: string,
+      sampleLength?: number  // Optional because it will be populated by analyze_wav_samples
     }[],
     muting?: {
       tags: string[],
@@ -49,8 +66,9 @@ function generateGroupsXml(config: DrumKitConfig): string {
       const layer = velocityLayers[i];
       const volumeAttr = sample.volume ? ` volume="${sample.volume}"` : '';
 
+      const sampleLengthAttr = sample.sampleLength ? ` start="0" end="${sample.sampleLength}"` : '';
       samples.push(
-        `      <sample path="${sample.path}"${volumeAttr} rootNote="${piece.rootNote}" ` +
+        `      <sample path="${sample.path}"${volumeAttr}${sampleLengthAttr} rootNote="${piece.rootNote}" ` +
         `loNote="${piece.rootNote}" hiNote="${piece.rootNote}" ` +
         `loVel="${layer.low}" hiVel="${layer.high}" />`
       );
@@ -83,12 +101,87 @@ const server = new Server(
   }
 );
 
+async function analyzeWavFile(path: string): Promise<WavAnalysis> {
+  try {
+    const info = await getWavInfo(path);
+    if (!info || !info.header) {
+      throw new Error('Invalid WAV file format');
+    }
+    
+    const duration = typeof info.duration === 'number' ? info.duration : 0;
+    const sampleRate = typeof info.header.sample_rate === 'number' ? info.header.sample_rate : 44100;
+    const channels = typeof info.header.num_channels === 'number' ? info.header.num_channels : 2;
+    const bitDepth = typeof info.header.bits_per_sample === 'number' ? info.header.bits_per_sample : 24;
+    
+    return {
+      path,
+      sampleLength: Math.round(duration * sampleRate),
+      sampleRate,
+      channels,
+      bitDepth
+    };
+  } catch (error: unknown) {
+    console.error('WAV analysis error:', error);
+    const message = error instanceof Error ? error.message : JSON.stringify(error);
+    throw new McpError(
+      ErrorCode.InternalError,
+      `Failed to analyze WAV file ${path}: ${message}`
+    );
+  }
+}
+
 server.setRequestHandler(ListToolsRequestSchema, async () => {
   return {
     tools: [
       {
+        name: "analyze_wav_samples",
+        description: "Analyze WAV files to get sample lengths and metadata. Use this tool to get accurate end markers for your samples to prevent looping issues in DecentSampler.",
+        inputSchema: {
+          type: "object",
+          properties: {
+            paths: {
+              type: "array",
+              items: { type: "string" },
+              description: "Array of paths to WAV files to analyze"
+            }
+          },
+          required: ["paths"]
+        }
+      },
+      {
         name: "generate_drum_groups",
-        description: "Generate DecentSampler <groups> XML for drum kits",
+        description: `Generate DecentSampler <groups> XML for drum kits.
+  
+Best Practices:
+- Group all samples for a drum piece (e.g., all kick mics) into a single group to prevent voice conflicts
+- Each sample should have start/end markers to prevent looping issues
+  * Use the analyze_wav_samples tool to get accurate sample lengths:
+    analyze_wav_samples(["Kick_Close_Soft.wav"]) -> {"sampleLength": 60645}
+    Then use start="0" end="60645" in your sample definition
+- When using multiple mic positions (e.g., Close, OH, Room), include them all in the same group
+- Use velocity layers within a group to control dynamics
+
+Example Structure:
+{
+  "drumPieces": [{
+    "name": "Kick",
+    "rootNote": 36,
+    "samples": [
+      // All mic positions for soft velocity
+      {"path": "Kick_Close_Soft.wav", "start": 0, "end": 60645},  // Length from analyze_wav_samples
+      {"path": "Kick_OH_L_Soft.wav", "start": 0, "end": 60000},
+      {"path": "Kick_OH_R_Soft.wav", "start": 0, "end": 60000},
+      // All mic positions for medium velocity
+      {"path": "Kick_Close_Medium.wav", "start": 0, "end": 70162},  // Length from analyze_wav_samples
+      ...
+    ]
+  }]
+}
+
+Workflow:
+1. First use analyze_wav_samples to get accurate lengths for all your WAV files
+2. Use those lengths to set the end markers in your drum pieces configuration
+3. Pass the complete configuration to generate_drum_groups to create the XML`,
         inputSchema: {
           type: "object",
           properties: {
@@ -155,50 +248,93 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
 });
 
 server.setRequestHandler(CallToolRequestSchema, async (request) => {
-  if (request.params.name !== "generate_drum_groups") {
-    throw new Error("Unknown tool");
+  switch (request.params.name) {
+    case "analyze_wav_samples": {
+      const args = request.params.arguments;
+      if (!args || !Array.isArray(args.paths)) {
+        throw new McpError(
+          ErrorCode.InvalidParams,
+          "Invalid arguments: expected array of paths"
+        );
+      }
+
+      try {
+        const analyses = await Promise.all(
+          args.paths.map(path => analyzeWavFile(path))
+        );
+
+        return {
+          content: [{
+            type: "text",
+            text: JSON.stringify(analyses, null, 2)
+          }]
+        };
+      } catch (error: unknown) {
+        if (error instanceof McpError) throw error;
+        const message = error instanceof Error ? error.message : String(error);
+        throw new McpError(
+          ErrorCode.InternalError,
+          `Failed to analyze WAV files: ${message}`
+        );
+      }
+    }
+    
+    case "generate_drum_groups": {
+
+      // Validate input matches our expected type
+      const args = request.params.arguments;
+      if (!args || typeof args !== 'object') {
+        throw new McpError(
+          ErrorCode.InvalidParams,
+          "Invalid arguments: expected object"
+        );
+      }
+
+      // Type guard function to validate DrumKitConfig
+      function isDrumKitConfig(obj: unknown): obj is DrumKitConfig {
+        const config = obj as Partial<DrumKitConfig>;
+        return (
+          !!config.globalSettings &&
+          Array.isArray(config.globalSettings.velocityLayers) &&
+          config.globalSettings.velocityLayers.every(layer => 
+            typeof layer.low === 'number' &&
+            typeof layer.high === 'number' &&
+            typeof layer.name === 'string'
+          ) &&
+          Array.isArray(config.drumPieces) &&
+          config.drumPieces.every(piece => 
+            typeof piece.name === 'string' &&
+            typeof piece.rootNote === 'number' &&
+            Array.isArray(piece.samples) &&
+            piece.samples.every(sample => typeof sample.path === 'string')
+          )
+        );
+      }
+
+      if (!isDrumKitConfig(args)) {
+        throw new McpError(
+          ErrorCode.InvalidParams,
+          "Invalid arguments: does not match DrumKitConfig schema"
+        );
+      }
+
+      const config = args;
+      const xml = generateGroupsXml(config);
+
+      return {
+        content: [{
+          type: "text",
+          text: xml
+        }]
+      };
+    }
+
+    default:
+      throw new McpError(
+        ErrorCode.MethodNotFound,
+        `Unknown tool: ${request.params.name}`
+      );
   }
-
-  // Validate input matches our expected type
-  const args = request.params.arguments;
-  if (!args || typeof args !== 'object') {
-    throw new Error("Invalid arguments: expected object");
-  }
-
-  // Type guard function to validate DrumKitConfig
-  function isDrumKitConfig(obj: unknown): obj is DrumKitConfig {
-    const config = obj as Partial<DrumKitConfig>;
-    return (
-      !!config.globalSettings &&
-      Array.isArray(config.globalSettings.velocityLayers) &&
-      config.globalSettings.velocityLayers.every(layer => 
-        typeof layer.low === 'number' &&
-        typeof layer.high === 'number' &&
-        typeof layer.name === 'string'
-      ) &&
-      Array.isArray(config.drumPieces) &&
-      config.drumPieces.every(piece => 
-        typeof piece.name === 'string' &&
-        typeof piece.rootNote === 'number' &&
-        Array.isArray(piece.samples) &&
-        piece.samples.every(sample => typeof sample.path === 'string')
-      )
-    );
-  }
-
-  if (!isDrumKitConfig(args)) {
-    throw new Error("Invalid arguments: does not match DrumKitConfig schema");
-  }
-
-  const config = args;
-  const xml = generateGroupsXml(config);
-
-  return {
-    content: [{
-      type: "text",
-      text: xml
-    }]
-  };
 });
 
 async function main() {
