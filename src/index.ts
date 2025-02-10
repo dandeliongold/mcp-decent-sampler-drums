@@ -5,9 +5,12 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import {
   CallToolRequestSchema,
   ListToolsRequestSchema,
+  ListPromptsRequestSchema,
+  GetPromptRequestSchema,
   ErrorCode,
   McpError,
 } from "@modelcontextprotocol/sdk/types.js";
+import { PRESET_PROMPT } from "./prompts/preset_guidelines.js";
 import { analyzeWavFile } from './wav-analysis.js';
 
 interface DrumKitConfig {
@@ -79,15 +82,47 @@ function generateGroupsXml(config: DrumKitConfig): string {
 const server = new Server(
   {
     name: "decent-sampler-drums",
-    version: "0.0.5",
+    version: "0.0.6",
   },
   {
     capabilities: {
+      prompts: {},
       tools: {},
     },
   }
 );
 
+
+server.setRequestHandler(ListPromptsRequestSchema, async () => {
+  return {
+    prompts: [
+      {
+        name: "preset_guidelines",
+        description: "Guidelines for structuring Decent Sampler preset files",
+      },
+    ],
+  };
+});
+
+server.setRequestHandler(GetPromptRequestSchema, async (request) => {
+  if (request.params.name === "preset_guidelines") {
+    return {
+      messages: [
+        {
+          role: "user",
+          content: {
+            type: "text",
+            text: PRESET_PROMPT,
+          },
+        },
+      ],
+    };
+  }
+  throw new McpError(
+    ErrorCode.MethodNotFound,
+    `Unknown prompt: ${request.params.name}`
+  );
+});
 
 server.setRequestHandler(ListToolsRequestSchema, async () => {
   return {
