@@ -1,5 +1,7 @@
 import { isDrumPitchConfig, isDrumEnvelopeConfig } from './drum-controls.js';
 
+import { MicBusConfig, DrumMicConfig, configureMicBuses, generateSampleBusRouting, validateMicRouting } from './mic-routing.js';
+
 export interface DrumKitConfig {
   globalSettings: {
     velocityLayers?: {
@@ -28,7 +30,8 @@ export interface DrumKitConfig {
           releaseCurve?: number  // -100 to 100, Default: 100 (exponential)
         }
       }
-    }
+    },
+    micBuses?: MicBusConfig[],  // Configuration for mic routing and volumes
   },
   drumPieces: {
     name: string,
@@ -38,7 +41,8 @@ export interface DrumKitConfig {
       volume?: string,
       seqPosition?: number,  // Position in round robin sequence
       seqMode?: "round_robin" | "random" | "true_random" | "always",
-      seqLength?: number
+      seqLength?: number,
+      micConfig?: DrumMicConfig  // Configuration for mic routing
     }[],
     seqMode?: "round_robin" | "random" | "true_random" | "always",
     seqLength?: number,
@@ -52,6 +56,10 @@ export interface DrumKitConfig {
 
 export function generateGroupsXml(config: DrumKitConfig): string {
   const { globalSettings, drumPieces } = config;
+  
+  // Generate buses XML if mic routing is configured
+  const busesXml = globalSettings.micBuses ? 
+    configureMicBuses(globalSettings.micBuses) : '';
   
   // Add round robin attributes to top-level groups if configured
   const roundRobinAttrs = globalSettings.roundRobin
@@ -132,10 +140,13 @@ export function generateGroupsXml(config: DrumKitConfig): string {
         sampleRRAttrs += ` seqPosition="${sample.seqPosition}"`;
       }
 
-      sampleElements.push(
+      // Generate sample element with bus routing if configured
+      const sampleXml = sample.micConfig ? 
+        generateSampleBusRouting(sample.path, sample.micConfig.busIndex, sample.micConfig.volume) :
         `      <sample path="${sample.path}"${volumeAttr} rootNote="${piece.rootNote}" ` +
-        `loNote="${piece.rootNote}" hiNote="${piece.rootNote}"${velocityAttrs}${sampleRRAttrs} />`
-      );
+        `loNote="${piece.rootNote}" hiNote="${piece.rootNote}"${velocityAttrs}${sampleRRAttrs} />`;
+      
+      sampleElements.push(sampleXml);
     }
 
     groups.push(
@@ -146,7 +157,12 @@ export function generateGroupsXml(config: DrumKitConfig): string {
     );
   }
 
-  return `<groups${roundRobinAttrs}>\n${groups.join('\n\n')}\n</groups>`;
+  // Combine buses and groups XML
+  const xml = [];
+  if (busesXml) xml.push(busesXml);
+  xml.push(`<groups${roundRobinAttrs}>\n${groups.join('\n\n')}\n</groups>`);
+  
+  return xml.join('\n\n');
 }
 
 // Type guard function to validate DrumKitConfig

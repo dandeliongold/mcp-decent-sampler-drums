@@ -15,6 +15,7 @@ import { analyzeWavFile } from './wav-analysis.js';
 import { DrumKitConfig, generateGroupsXml, isDrumKitConfig } from './drum-kit.js';
 import { DrumControlsConfig, configureDrumControls } from './drum-controls.js';
 import { configureRoundRobin } from './round-robin.js';
+import { MicBusConfig, DrumMicConfig, validateMicRouting } from './mic-routing.js';
 
 const server = new Server(
   {
@@ -190,6 +191,88 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
         }
       },
       {
+        name: "configure_mic_routing",
+        description: "Configure multi-mic routing with MIDI controls for drum samples.\n\nThis tool will:\n- Set up individual volume controls for each mic position (close, OH L/R, room L/R)\n- Route each mic to its own auxiliary output for DAW mixing\n- Configure MIDI CC mappings for mic volumes\n- Generate proper XML structure for DecentSampler",
+        inputSchema: {
+          type: "object",
+          properties: {
+            micBuses: {
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  name: { 
+                    type: "string",
+                    description: "Display name for the mic (e.g., 'Close Mic', 'OH L')"
+                  },
+                  outputTarget: { 
+                    type: "string",
+                    description: "Output routing (e.g., 'AUX_STEREO_OUTPUT_1')"
+                  },
+                  volume: {
+                    type: "object",
+                    properties: {
+                      default: { 
+                        type: "number",
+                        description: "Default volume in dB"
+                      },
+                      min: { 
+                        type: "number",
+                        description: "Minimum volume in dB (e.g., -96)"
+                      },
+                      max: { 
+                        type: "number",
+                        description: "Maximum volume in dB (e.g., 12)"
+                      },
+                      midiCC: { 
+                        type: "number",
+                        description: "MIDI CC number for volume control"
+                      }
+                    },
+                    required: ["default"]
+                  }
+                },
+                required: ["name", "outputTarget"]
+              }
+            },
+            drumPieces: {
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  name: { type: "string" },
+                  rootNote: { type: "number" },
+                  samples: {
+                    type: "array",
+                    items: {
+                      type: "object",
+                      properties: {
+                        path: { type: "string" },
+                        micConfig: {
+                          type: "object",
+                          properties: {
+                            position: {
+                              type: "string",
+                              enum: ["close", "overheadLeft", "overheadRight", "roomLeft", "roomRight"]
+                            },
+                            busIndex: { type: "number" },
+                            volume: { type: "number" }
+                          },
+                          required: ["position", "busIndex"]
+                        }
+                      },
+                      required: ["path", "micConfig"]
+                    }
+                  }
+                },
+                required: ["name", "rootNote", "samples"]
+              }
+            }
+          },
+          required: ["micBuses", "drumPieces"]
+        }
+      },
+      {
         name: "generate_drum_groups",
         description: `Generate DecentSampler <groups> XML for drum kits.
   
@@ -359,8 +442,53 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       }
     }
     
-    case "generate_drum_groups": {
+    case "configure_mic_routing": {
+      const args = request.params.arguments;
+      if (!args || typeof args !== 'object' || !Array.isArray(args.micBuses) || !Array.isArray(args.drumPieces)) {
+        throw new McpError(
+          ErrorCode.InvalidParams,
+          "Invalid arguments: expected object with micBuses and drumPieces"
+        );
+      }
 
+      try {
+        // Validate mic routing configuration
+        validateMicRouting(
+          args.micBuses as MicBusConfig[],
+          args.drumPieces.flatMap(piece => 
+            (piece.samples as Array<{ micConfig?: DrumMicConfig }>)
+              .map(sample => sample.micConfig)
+              .filter((config): config is DrumMicConfig => !!config)
+          )
+        );
+
+        // Create DrumKitConfig with mic routing
+        const config: DrumKitConfig = {
+          globalSettings: {
+            micBuses: args.micBuses as MicBusConfig[]
+          },
+          drumPieces: args.drumPieces as DrumKitConfig['drumPieces']
+        };
+
+        // Generate XML with mic routing
+        const xml = generateGroupsXml(config);
+        return {
+          content: [{
+            type: "text",
+            text: xml
+          }]
+        };
+      } catch (error: unknown) {
+        if (error instanceof McpError) throw error;
+        const message = error instanceof Error ? error.message : String(error);
+        throw new McpError(
+          ErrorCode.InternalError,
+          `Failed to configure mic routing: ${message}`
+        );
+      }
+    }
+
+    case "generate_drum_groups": {
       // Validate input matches our expected type
       const args = request.params.arguments;
       if (!args || typeof args !== 'object') {
