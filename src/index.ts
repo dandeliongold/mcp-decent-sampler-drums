@@ -13,6 +13,7 @@ import {
 import { PRESET_PROMPT } from "./prompts/preset_guidelines.js";
 import { analyzeWavFile } from './wav-analysis.js';
 import { DrumKitConfig, generateGroupsXml, isDrumKitConfig } from './drum-kit.js';
+import { configureRoundRobin } from './round-robin.js';
 
 const server = new Server(
   {
@@ -62,6 +63,46 @@ server.setRequestHandler(GetPromptRequestSchema, async (request) => {
 server.setRequestHandler(ListToolsRequestSchema, async () => {
   return {
     tools: [
+      {
+        name: "configure_round_robin",
+        description: "Configure round robin sample playback for a set of samples.\n\nThis tool will:\n- Validate sequence positions\n- Verify sample files exist\n- Generate proper XML structure for round robin playback",
+        inputSchema: {
+          type: "object",
+          properties: {
+            directory: {
+              type: "string",
+              description: "Absolute path to the directory containing samples"
+            },
+            mode: {
+              type: "string",
+              enum: ["round_robin", "random", "true_random", "always"],
+              description: "Round robin playback mode"
+            },
+            length: {
+              type: "number",
+              description: "Number of round robin variations"
+            },
+            samples: {
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  path: {
+                    type: "string",
+                    description: "Path to sample file (relative to directory)"
+                  },
+                  seqPosition: {
+                    type: "number",
+                    description: "Position in the round robin sequence (1 to length)"
+                  }
+                },
+                required: ["path", "seqPosition"]
+              }
+            }
+          },
+          required: ["directory", "mode", "length", "samples"]
+        }
+      },
       {
         name: "analyze_wav_samples",
         description: "Analyze WAV files to detect common issues in drum kit samples such as:\n- Non-standard WAV headers that may cause playback issues\n- Metadata inconsistencies that could affect multi-mic setups\n\nIMPORTANT: Always use absolute paths (e.g., 'C:/Users/username/Documents/Samples/kick.wav') rather than relative paths.",
@@ -168,6 +209,55 @@ Workflow:
 
 server.setRequestHandler(CallToolRequestSchema, async (request) => {
   switch (request.params.name) {
+    case "configure_round_robin": {
+      const args = request.params.arguments;
+      if (!args || typeof args !== 'object' || 
+          typeof args.directory !== 'string' ||
+          typeof args.mode !== 'string' ||
+          typeof args.length !== 'number' ||
+          !Array.isArray(args.samples)) {
+        throw new McpError(
+          ErrorCode.InvalidParams,
+          "Invalid arguments: expected object with directory, mode, length, and samples"
+        );
+      }
+
+      if (!['round_robin', 'random', 'true_random', 'always'].includes(args.mode)) {
+        throw new McpError(
+          ErrorCode.InvalidParams,
+          "Invalid mode: must be one of 'round_robin', 'random', 'true_random', 'always'"
+        );
+      }
+
+      try {
+        const config = configureRoundRobin(args.directory, {
+          mode: args.mode as "round_robin" | "random" | "true_random" | "always",
+          length: args.length,
+          groups: [{
+            name: "Samples",
+            samples: args.samples.map(s => ({
+              path: String(s.path),
+              seqPosition: Number(s.seqPosition)
+            }))
+          }]
+        });
+        const xml = generateGroupsXml(config);
+        return {
+          content: [{
+            type: "text",
+            text: xml
+          }]
+        };
+      } catch (error: unknown) {
+        if (error instanceof McpError) throw error;
+        const message = error instanceof Error ? error.message : String(error);
+        throw new McpError(
+          ErrorCode.InternalError,
+          `Failed to configure round robin: ${message}`
+        );
+      }
+    }
+
     case "analyze_wav_samples": {
       const args = request.params.arguments;
       if (!args || !Array.isArray(args.paths)) {
