@@ -47,7 +47,9 @@ https://decentsampler-developers-guide.readthedocs.io/en/stable/
 
 3. Sample Configuration:
 - Always specify start/end markers to prevent looping issues
-- Use loVel/hiVel for velocity layers (e.g., soft=1-42, medium=43-85, hard=86-127)
+- Velocity layers are optional:
+  * If omitted: Samples respond to all velocities naturally
+  * If specified: Use loVel/hiVel for velocity ranges (e.g., soft=1-42, medium=43-85, hard=86-127)
 - Follow standard MIDI mapping:
   * Kick = 36
   * Snare = 38
@@ -124,35 +126,67 @@ Step 1: Analyze Your Samples
 - Store the returned sample lengths for use in your groups
 
 Step 2: Structure Your Configuration
-- Organize samples by drum piece and velocity layer
-- Include all mic positions in each configuration:
-  Example configuration:
-  
-  {
-    "globalSettings": {
-      "velocityLayers": [
-        { "low": 1, "high": 54, "name": "soft" },
-        { "low": 55, "high": 94, "name": "medium" }
-      ]
-    },
-    "drumPieces": [{
-      "name": "Kick",
-      "rootNote": 36,
-      "samples": [
-        // Soft velocity, all mics
-        { 
-          "path": "C:/path/to/samples/Kick_Close_Soft.wav",
-          "start": 0,
-          "end": 60645  // From analyze_wav_samples
-        },
-        { 
-          "path": "C:/path/to/samples/Kick_OH_Soft.wav",
-          "start": 0,
-          "end": 58932  // From analyze_wav_samples
-        }
-      ]
-    }]
-  }
+- Organize samples by drum piece
+- Include all mic positions in each configuration
+- Velocity layers are optional depending on your needs:
+
+Example with velocity layers:
+{
+  "globalSettings": {
+    "velocityLayers": [
+      { "low": 1, "high": 54, "name": "soft" },
+      { "low": 55, "high": 94, "name": "medium" }
+    ]
+  },
+  "drumPieces": [{
+    "name": "Kick",
+    "rootNote": 36,
+    "samples": [
+      // Soft velocity, all mics
+      { 
+        "path": "C:/path/to/samples/Kick_Close_Soft.wav",
+        "start": 0,
+        "end": 60645  // From analyze_wav_samples
+      },
+      { 
+        "path": "C:/path/to/samples/Kick_OH_Soft.wav",
+        "start": 0,
+        "end": 58932  // From analyze_wav_samples
+      }
+    ]
+  }]
+}
+
+Example without velocity layers (simpler configuration):
+{
+  "globalSettings": {
+    "volume": "-12dB"  // Optional global settings
+  },
+  "drumPieces": [{
+    "name": "Kick",
+    "rootNote": 36,
+    "samples": [
+      // All mic positions
+      { 
+        "path": "C:/path/to/samples/Kick_Close.wav",
+        "start": 0,
+        "end": 60645  // From analyze_wav_samples
+      },
+      { 
+        "path": "C:/path/to/samples/Kick_OH.wav",
+        "start": 0,
+        "end": 58932  // From analyze_wav_samples
+      }
+    ]
+  }]
+}
+
+Choose your approach based on your needs:
+- Use velocity layers when you have multiple dynamic levels recorded separately
+- Omit velocity layers when:
+  * You have single-dynamic samples that should respond naturally to velocity
+  * You want a simpler configuration
+  * You prefer to control dynamics purely through velocity-to-amplitude tracking
 
 Step 3: Generate Groups
 - Pass your complete configuration to generate_drum_groups

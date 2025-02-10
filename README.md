@@ -16,7 +16,9 @@ This TypeScript-based MCP server provides tools for working with DecentSampler d
   - Provides sample rate, channel count, and bit depth information
 
 - `generate_drum_groups` - Generate DecentSampler `<groups>` XML for drum kits
-  - Supports multiple velocity layers with configurable ranges
+  - Flexible velocity handling:
+    * Simple mode: Natural velocity response without explicit layers
+    * Advanced mode: Multiple velocity layers with configurable ranges
   - Handles sample path mapping and root note assignments
   - Optional muting groups with tags
   - Configurable global settings (volume, velocity tracking, trigger modes)
@@ -42,11 +44,11 @@ The `generate_drum_groups` tool accepts a configuration object with the followin
     volume?: string,              // Optional global volume adjustment
     ampVelTrack?: number,        // Optional velocity tracking (default: 1)
     trigger?: "attack" | "release" | "first" | "legato", // Optional trigger mode (default: "attack")
-    velocityLayers: {            // Required velocity layer definitions
+    velocityLayers?: {           // Optional velocity layer definitions
       low: number,               // Lower velocity bound
       high: number,              // Upper velocity bound
       name: string               // Layer identifier
-    }[]
+    }[]                         // Omit for natural velocity response
   },
   drumPieces: {
     name: string,                // Name of the drum piece
