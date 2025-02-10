@@ -1,0 +1,238 @@
+import { DrumKitConfig, generateGroupsXml, isDrumKitConfig } from '../src/drum-kit';
+
+describe('isDrumKitConfig', () => {
+  it('should validate a complete valid config', () => {
+    const validConfig = {
+      globalSettings: {
+        velocityLayers: [
+          { low: 0, high: 63, name: 'soft' },
+          { low: 64, high: 127, name: 'hard' }
+        ]
+      },
+      drumPieces: [
+        {
+          name: 'Kick',
+          rootNote: 36,
+          samples: [
+            { path: 'samples/kick_soft.wav' },
+            { path: 'samples/kick_hard.wav' }
+          ],
+          muting: {
+            tags: ['kick'],
+            silencedByTags: ['kick2']
+          }
+        }
+      ]
+    };
+    expect(isDrumKitConfig(validConfig)).toBe(true);
+  });
+
+  it('should validate config without optional fields', () => {
+    const minimalConfig = {
+      globalSettings: {},
+      drumPieces: [
+        {
+          name: 'Snare',
+          rootNote: 38,
+          samples: [{ path: 'samples/snare.wav' }]
+        }
+      ]
+    };
+    expect(isDrumKitConfig(minimalConfig)).toBe(true);
+  });
+
+  it('should reject invalid configs', () => {
+    const invalidConfigs = [
+      null,
+      undefined,
+      {},
+      { globalSettings: {}, drumPieces: null },
+      { globalSettings: null, drumPieces: [] },
+      {
+        globalSettings: {},
+        drumPieces: [{ name: 'Invalid', samples: [] }] // missing rootNote
+      },
+      {
+        globalSettings: {},
+        drumPieces: [{ rootNote: 36, samples: [] }] // missing name
+      },
+      {
+        globalSettings: {},
+        drumPieces: [{ name: 'Invalid', rootNote: '36', samples: [] }] // rootNote wrong type
+      }
+    ];
+
+    invalidConfigs.forEach(config => {
+      expect(isDrumKitConfig(config)).toBe(false);
+    });
+  });
+
+  it('should validate velocity layers correctly', () => {
+    const configWithInvalidLayers = {
+      globalSettings: {
+        velocityLayers: [
+          { low: '0', high: 63, name: 'soft' }, // invalid low value type
+          { low: 64, high: '127', name: 'hard' } // invalid high value type
+        ]
+      },
+      drumPieces: [
+        {
+          name: 'Kick',
+          rootNote: 36,
+          samples: [{ path: 'samples/kick.wav' }]
+        }
+      ]
+    };
+    expect(isDrumKitConfig(configWithInvalidLayers)).toBe(false);
+  });
+});
+
+describe('generateGroupsXml', () => {
+  it('should generate XML for a basic drum kit', () => {
+    const config: DrumKitConfig = {
+      globalSettings: {},
+      drumPieces: [
+        {
+          name: 'Kick',
+          rootNote: 36,
+          samples: [{ path: 'samples/kick.wav' }]
+        }
+      ]
+    };
+
+    const expected = `<groups>
+  <group name="Kick" ampVelTrack="1" tuning="0.0">
+      <sample path="samples/kick.wav" rootNote="36" loNote="36" hiNote="36" />
+  </group>
+</groups>`;
+
+    expect(generateGroupsXml(config)).toBe(expected);
+  });
+
+  it('should handle multiple drum pieces', () => {
+    const config: DrumKitConfig = {
+      globalSettings: {},
+      drumPieces: [
+        {
+          name: 'Kick',
+          rootNote: 36,
+          samples: [{ path: 'samples/kick.wav' }]
+        },
+        {
+          name: 'Snare',
+          rootNote: 38,
+          samples: [{ path: 'samples/snare.wav' }]
+        }
+      ]
+    };
+
+    const expected = `<groups>
+  <group name="Kick" ampVelTrack="1" tuning="0.0">
+      <sample path="samples/kick.wav" rootNote="36" loNote="36" hiNote="36" />
+  </group>
+
+  <group name="Snare" ampVelTrack="1" tuning="0.0">
+      <sample path="samples/snare.wav" rootNote="38" loNote="38" hiNote="38" />
+  </group>
+</groups>`;
+
+    expect(generateGroupsXml(config)).toBe(expected);
+  });
+
+  it('should include velocity layers when specified', () => {
+    const config: DrumKitConfig = {
+      globalSettings: {
+        velocityLayers: [
+          { low: 0, high: 63, name: 'soft' },
+          { low: 64, high: 127, name: 'hard' }
+        ]
+      },
+      drumPieces: [
+        {
+          name: 'Kick',
+          rootNote: 36,
+          samples: [
+            { path: 'samples/kick_soft.wav' },
+            { path: 'samples/kick_hard.wav' }
+          ]
+        }
+      ]
+    };
+
+    const expected = `<groups>
+  <group name="Kick" ampVelTrack="1" tuning="0.0">
+      <sample path="samples/kick_soft.wav" rootNote="36" loNote="36" hiNote="36" loVel="0" hiVel="63" />
+      <sample path="samples/kick_hard.wav" rootNote="36" loNote="36" hiNote="36" loVel="64" hiVel="127" />
+  </group>
+</groups>`;
+
+    expect(generateGroupsXml(config)).toBe(expected);
+  });
+
+  it('should include volume attributes when specified', () => {
+    const config: DrumKitConfig = {
+      globalSettings: {},
+      drumPieces: [
+        {
+          name: 'Kick',
+          rootNote: 36,
+          samples: [{ path: 'samples/kick.wav', volume: '-6dB' }]
+        }
+      ]
+    };
+
+    const expected = `<groups>
+  <group name="Kick" ampVelTrack="1" tuning="0.0">
+      <sample path="samples/kick.wav" volume="-6dB" rootNote="36" loNote="36" hiNote="36" />
+  </group>
+</groups>`;
+
+    expect(generateGroupsXml(config)).toBe(expected);
+  });
+
+  it('should include muting configuration when specified', () => {
+    const config: DrumKitConfig = {
+      globalSettings: {},
+      drumPieces: [
+        {
+          name: 'HiHat',
+          rootNote: 42,
+          samples: [{ path: 'samples/hihat_closed.wav' }],
+          muting: {
+            tags: ['closed_hihat'],
+            silencedByTags: ['open_hihat']
+          }
+        }
+      ]
+    };
+
+    const expected = `<groups>
+  <group name="HiHat" ampVelTrack="1" tuning="0.0" tags="closed_hihat" silencedByTags="open_hihat" silencingMode="fast">
+      <sample path="samples/hihat_closed.wav" rootNote="42" loNote="42" hiNote="42" />
+  </group>
+</groups>`;
+
+    expect(generateGroupsXml(config)).toBe(expected);
+  });
+
+  it('should handle special characters in names', () => {
+    const config: DrumKitConfig = {
+      globalSettings: {},
+      drumPieces: [
+        {
+          name: 'Hi-Hat & Cymbal',
+          rootNote: 42,
+          samples: [{ path: 'samples/hihat & cymbal.wav' }]
+        }
+      ]
+    };
+
+    const expected = `<groups>
+  <group name="Hi-Hat & Cymbal" ampVelTrack="1" tuning="0.0">
+      <sample path="samples/hihat & cymbal.wav" rootNote="42" loNote="42" hiNote="42" />
+  </group>
+</groups>`;
+
+    expect(generateGroupsXml(config)).toBe(expected);
+  });
+});

@@ -60,23 +60,49 @@ export function generateGroupsXml(config: DrumKitConfig): string {
 
 // Type guard function to validate DrumKitConfig
 export function isDrumKitConfig(obj: unknown): obj is DrumKitConfig {
+  if (!obj || typeof obj !== 'object') {
+    return false;
+  }
+
   const config = obj as Partial<DrumKitConfig>;
-  return (
-    !!config.globalSettings &&
-    (!config.globalSettings.velocityLayers || (
-      Array.isArray(config.globalSettings.velocityLayers) &&
-      config.globalSettings.velocityLayers.every(layer => 
-        typeof layer.low === 'number' &&
-        typeof layer.high === 'number' &&
-        typeof layer.name === 'string'
-      )
-    )) &&
-    Array.isArray(config.drumPieces) &&
-    config.drumPieces.every(piece => 
-      typeof piece.name === 'string' &&
-      typeof piece.rootNote === 'number' &&
-      Array.isArray(piece.samples) &&
-      piece.samples.every(sample => typeof sample.path === 'string')
+  
+  // Check if globalSettings exists and is an object
+  if (!config.globalSettings || typeof config.globalSettings !== 'object') {
+    return false;
+  }
+
+  // Check velocity layers if they exist
+  if (config.globalSettings.velocityLayers !== undefined) {
+    if (!Array.isArray(config.globalSettings.velocityLayers)) {
+      return false;
+    }
+    
+    if (!config.globalSettings.velocityLayers.every(layer => 
+      layer &&
+      typeof layer === 'object' &&
+      typeof layer.low === 'number' &&
+      typeof layer.high === 'number' &&
+      typeof layer.name === 'string'
+    )) {
+      return false;
+    }
+  }
+
+  // Check drumPieces array
+  if (!Array.isArray(config.drumPieces)) {
+    return false;
+  }
+
+  return config.drumPieces.every(piece => 
+    piece &&
+    typeof piece === 'object' &&
+    typeof piece.name === 'string' &&
+    typeof piece.rootNote === 'number' &&
+    Array.isArray(piece.samples) &&
+    piece.samples.every(sample => 
+      sample &&
+      typeof sample === 'object' &&
+      typeof sample.path === 'string'
     )
   );
 }
