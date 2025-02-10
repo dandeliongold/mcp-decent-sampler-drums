@@ -1,30 +1,52 @@
 import { jest } from '@jest/globals';
 import { McpError } from '@modelcontextprotocol/sdk/types.js';
+import { ErrorCode } from '@modelcontextprotocol/sdk/types.js';
 import path from 'path';
 
-// Define types for music-metadata response
-interface IMusicMetadataFormat {
-  duration?: number;
-  sampleRate?: number;
-  numberOfChannels?: number;
-  bitsPerSample?: number;
-}
-
-interface IMusicMetadata {
-  format?: IMusicMetadataFormat;
-}
-
-// Mock music-metadata module
-const mockParseFile = jest.fn<(path: string) => Promise<IMusicMetadata>>();
-jest.mock('music-metadata', () => ({
-  parseFile: mockParseFile
+// Mock fs module
+jest.mock('fs', () => ({
+  promises: {
+    readFile: jest.fn()
+  }
 }));
 
-// Type assertion for mockParseFile to help TypeScript understand mock methods
-const typedMockParseFile = mockParseFile as jest.MockedFunction<typeof mockParseFile>;
+// Import fs mock for typing
+import { promises as fs } from 'fs';
+const mockReadFile = fs.readFile as jest.MockedFunction<typeof fs.readFile>;
 
 // Import our function to test
 import { analyzeWavFile } from '../src/wav-analysis.js';
+
+// Helper to create WAV header buffer
+function createWavBuffer({
+  numChannels = 2,
+  sampleRate = 44100,
+  bitsPerSample = 24,
+  dataSize = 1000
+} = {}) {
+  const buffer = Buffer.alloc(44 + dataSize); // Standard WAV header + data
+
+  // RIFF header
+  buffer.write('RIFF', 0);
+  buffer.writeUInt32LE(36 + dataSize, 4); // File size - 8
+  buffer.write('WAVE', 8);
+
+  // fmt chunk
+  buffer.write('fmt ', 12);
+  buffer.writeUInt32LE(16, 16); // fmt chunk size
+  buffer.writeUInt16LE(1, 20); // PCM format
+  buffer.writeUInt16LE(numChannels, 22);
+  buffer.writeUInt32LE(sampleRate, 24);
+  buffer.writeUInt32LE((sampleRate * numChannels * bitsPerSample) / 8, 28); // Byte rate
+  buffer.writeUInt16LE((numChannels * bitsPerSample) / 8, 32); // Block align
+  buffer.writeUInt16LE(bitsPerSample, 34);
+
+  // data chunk
+  buffer.write('data', 36);
+  buffer.writeUInt32LE(dataSize, 40);
+
+  return buffer;
+}
 
 describe('WAV File Analysis', () => {
   // Test file paths
@@ -35,44 +57,38 @@ describe('WAV File Analysis', () => {
   const invalidSizesWavPath = path.join(__dirname, 'fixtures', 'invalid_sizes.wav');
   
   beforeEach(() => {
-    // Clear mock before each test
     jest.clearAllMocks();
   });
 
   describe('Success Cases', () => {
     it('should successfully analyze a valid WAV file', async () => {
-      // Mock successful response
-      typedMockParseFile.mockResolvedValue({
-        format: {
-          duration: 1.5,
-          sampleRate: 44100,
-          numberOfChannels: 2,
-          bitsPerSample: 24
-        }
+      const wavBuffer = createWavBuffer({
+        numChannels: 2,
+        sampleRate: 44100,
+        bitsPerSample: 24,
+        dataSize: 396900 // 1.5 seconds of audio (44100 * 1.5 * 2 channels * 3 bytes per sample)
       });
+      mockReadFile.mockResolvedValue(wavBuffer);
 
       const result = await analyzeWavFile(validWavPath);
 
       expect(result).toEqual({
         path: validWavPath,
-        sampleLength: 66150, // 1.5 seconds * 44100 Hz
+        sampleLength: 66150, // dataSize / (channels * bytesPerSample)
         sampleRate: 44100,
         channels: 2,
         bitDepth: 24
       });
-
-      expect(typedMockParseFile).toHaveBeenCalledWith(validWavPath);
     });
 
     it('should handle different bit depths', async () => {
-      typedMockParseFile.mockResolvedValue({
-        format: {
-          duration: 1.0,
-          sampleRate: 44100,
-          numberOfChannels: 1,
-          bitsPerSample: 16
-        }
+      const wavBuffer = createWavBuffer({
+        numChannels: 1,
+        sampleRate: 44100,
+        bitsPerSample: 16,
+        dataSize: 88200 // 1 second of audio
       });
+      mockReadFile.mockResolvedValue(wavBuffer);
 
       const result = await analyzeWavFile(validWavPath);
 
@@ -86,14 +102,13 @@ describe('WAV File Analysis', () => {
     });
 
     it('should handle high sample rates', async () => {
-      typedMockParseFile.mockResolvedValue({
-        format: {
-          duration: 1.0,
-          sampleRate: 96000,
-          numberOfChannels: 2,
-          bitsPerSample: 24
-        }
+      const wavBuffer = createWavBuffer({
+        numChannels: 2,
+        sampleRate: 96000,
+        bitsPerSample: 24,
+        dataSize: 576000 // 1 second of audio
       });
+      mockReadFile.mockResolvedValue(wavBuffer);
 
       const result = await analyzeWavFile(validWavPath);
 
@@ -109,30 +124,12 @@ describe('WAV File Analysis', () => {
 
   describe('Error Cases', () => {
     it('should handle JUNK chunk error case (real world error)', async () => {
-      // Mock the specific error we encountered in production
-      const errorData = {
-        error: true,
-        invalid_reasons: [
-          'Expected "fmt " string at 8',
-          'Unknown format: 0'
-        ],
-        header: {
-          riff_head: 'RIFF',
-          chunk_size: 329972,
-          wave_identifier: 'WAVE',
-          fmt_identifier: 'JUNK',
-          subchunk_size: 28,
-          audio_format: 0,
-          num_channels: 0,
-          sample_rate: 0,
-          byte_rate: 0,
-          block_align: 0,
-          bits_per_sample: 0,
-          data_identifier: '\u0000\u0000\u0000\u0000'
-        }
-      };
-
-      typedMockParseFile.mockRejectedValue(new Error(JSON.stringify(errorData)));
+      const buffer = Buffer.alloc(44);
+      buffer.write('RIFF', 0);
+      buffer.writeUInt32LE(36, 4);
+      buffer.write('WAVE', 8);
+      buffer.write('JUNK', 12); // JUNK instead of fmt
+      mockReadFile.mockResolvedValue(buffer);
 
       await expect(analyzeWavFile(corruptedWavPath))
         .rejects
@@ -142,26 +139,15 @@ describe('WAV File Analysis', () => {
         await analyzeWavFile(corruptedWavPath);
       } catch (error) {
         expect(error).toBeInstanceOf(McpError);
-        const errorMessage = (error as McpError).message;
-        // Extract the JSON part from the error message
-        const jsonMatch = errorMessage.match(/{.*}/);
-        expect(jsonMatch).toBeTruthy();
-        const errorJson = JSON.parse(jsonMatch![0]);
-        expect(errorJson.invalid_reasons).toContain('Expected "fmt " string at 8');
-        expect(errorJson.invalid_reasons).toContain('Unknown format: 0');
+        expect(error).toHaveProperty('code', ErrorCode.InvalidRequest);
+        expect((error as McpError).message).toContain('Missing fmt chunk');
       }
     });
 
     it('should handle invalid audio format', async () => {
-      const errorData = {
-        error: true,
-        invalid_reasons: ['Unknown format: 0'],
-        header: {
-          audio_format: 0
-        }
-      };
-
-      typedMockParseFile.mockRejectedValue(new Error(JSON.stringify(errorData)));
+      const buffer = createWavBuffer();
+      buffer.writeUInt16LE(2, 20); // Non-PCM format
+      mockReadFile.mockResolvedValue(buffer);
 
       await expect(analyzeWavFile(invalidFormatWavPath))
         .rejects
@@ -171,95 +157,118 @@ describe('WAV File Analysis', () => {
         await analyzeWavFile(invalidFormatWavPath);
       } catch (error) {
         expect(error).toBeInstanceOf(McpError);
-        expect((error as McpError).message).toContain('Unknown format: 0');
+        expect(error).toHaveProperty('code', ErrorCode.InvalidRequest);
+        expect((error as McpError).message).toContain('Unsupported audio format: 2');
       }
     });
 
     it('should handle missing data chunk', async () => {
-      typedMockParseFile.mockRejectedValue(new Error('Missing data chunk'));
+      const buffer = Buffer.alloc(44); // Minimum size but no data chunk
+      buffer.write('RIFF', 0);
+      buffer.writeUInt32LE(36, 4);
+      buffer.write('WAVE', 8);
+      buffer.write('fmt ', 12);
+      buffer.writeUInt32LE(16, 16); // fmt chunk size
+      buffer.writeUInt16LE(1, 20); // PCM format
+      buffer.writeUInt16LE(2, 22); // channels
+      buffer.writeUInt32LE(44100, 24); // sample rate
+      buffer.writeUInt32LE(264600, 28); // byte rate
+      buffer.writeUInt16LE(6, 32); // block align
+      buffer.writeUInt16LE(24, 34); // bits per sample
+      mockReadFile.mockResolvedValue(buffer);
 
       await expect(analyzeWavFile(missingChunksWavPath))
         .rejects
         .toThrow(McpError);
+
+      try {
+        await analyzeWavFile(missingChunksWavPath);
+      } catch (error) {
+        expect(error).toBeInstanceOf(McpError);
+        expect(error).toHaveProperty('code', ErrorCode.InvalidRequest);
+        expect((error as McpError).message).toContain('Missing data chunk');
+      }
     });
 
-    it('should handle invalid chunk sizes', async () => {
-      typedMockParseFile.mockRejectedValue(new Error('Invalid chunk size'));
+    it('should handle file too small', async () => {
+      const buffer = Buffer.alloc(40); // Less than minimum WAV header size
+      mockReadFile.mockResolvedValue(buffer);
 
       await expect(analyzeWavFile(invalidSizesWavPath))
         .rejects
         .toThrow(McpError);
+
+      try {
+        await analyzeWavFile(invalidSizesWavPath);
+      } catch (error) {
+        expect(error).toBeInstanceOf(McpError);
+        expect(error).toHaveProperty('code', ErrorCode.InvalidRequest);
+        expect((error as McpError).message).toContain('File too small to be a valid WAV file');
+      }
     });
 
-    it('should handle missing format information', async () => {
-      typedMockParseFile.mockResolvedValue({});
+    it('should handle missing RIFF header', async () => {
+      const buffer = createWavBuffer();
+      buffer.write('JUNK', 0); // Invalid RIFF header
+      mockReadFile.mockResolvedValue(buffer);
 
       await expect(analyzeWavFile(validWavPath))
         .rejects
-        .toThrow('No format information found in WAV file');
+        .toThrow(McpError);
+
+      try {
+        await analyzeWavFile(validWavPath);
+      } catch (error) {
+        expect(error).toBeInstanceOf(McpError);
+        expect(error).toHaveProperty('code', ErrorCode.InvalidRequest);
+        expect((error as McpError).message).toContain('Missing RIFF header');
+      }
     });
   });
 
   describe('Edge Cases', () => {
-    it('should handle extremely short files', async () => {
-      typedMockParseFile.mockResolvedValue({
-        format: {
-          duration: 0.0001, // Extremely short duration
-          sampleRate: 44100,
-          numberOfChannels: 2,
-          bitsPerSample: 24
-        }
+    it('should handle extremely short data chunks', async () => {
+      const wavBuffer = createWavBuffer({
+        dataSize: 4 // Extremely small data chunk
       });
+      mockReadFile.mockResolvedValue(wavBuffer);
 
       const result = await analyzeWavFile(validWavPath);
-      expect(result.sampleLength).toBe(4); // 0.0001 * 44100 rounded
+      expect(result.sampleLength).toBe(1); // 4 bytes / (2 channels * 3 bytes per sample)
     });
 
-    it('should handle extremely long files', async () => {
-      typedMockParseFile.mockResolvedValue({
-        format: {
-          duration: 7200, // 2 hours
-          sampleRate: 44100,
-          numberOfChannels: 2,
-          bitsPerSample: 24
-        }
+    it('should handle extremely large data chunks', async () => {
+      const wavBuffer = createWavBuffer({
+        dataSize: 7200 * 44100 * 6 // 2 hours of stereo 24-bit audio
       });
+      mockReadFile.mockResolvedValue(wavBuffer);
 
       const result = await analyzeWavFile(validWavPath);
       expect(result.sampleLength).toBe(317520000); // 7200 * 44100
     });
 
-    it('should use default values for missing format properties', async () => {
-      typedMockParseFile.mockResolvedValue({
-        format: {
-          duration: 1.0
-          // Missing other properties - should use defaults
-        }
+    it('should handle mono files', async () => {
+      const wavBuffer = createWavBuffer({
+        numChannels: 1,
+        dataSize: 44100 * 3 // 1 second of mono 24-bit audio
       });
+      mockReadFile.mockResolvedValue(wavBuffer);
 
       const result = await analyzeWavFile(validWavPath);
-
-      expect(result).toEqual({
-        path: validWavPath,
-        sampleLength: 44100, // 1.0 seconds * 44100 Hz
-        sampleRate: 44100,   // Default
-        channels: 2,         // Default
-        bitDepth: 24        // Default
-      });
+      expect(result.channels).toBe(1);
+      expect(result.sampleLength).toBe(44100);
     });
 
     it('should handle multi-channel files', async () => {
-      typedMockParseFile.mockResolvedValue({
-        format: {
-          duration: 1.0,
-          sampleRate: 44100,
-          numberOfChannels: 8, // 8 channel audio
-          bitsPerSample: 24
-        }
+      const wavBuffer = createWavBuffer({
+        numChannels: 8,
+        dataSize: 44100 * 24 // 1 second of 8-channel 24-bit audio
       });
+      mockReadFile.mockResolvedValue(wavBuffer);
 
       const result = await analyzeWavFile(validWavPath);
       expect(result.channels).toBe(8);
+      expect(result.sampleLength).toBe(44100);
     });
   });
 });
