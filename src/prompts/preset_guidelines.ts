@@ -89,6 +89,23 @@ IMPORTANT: All Decent Sampler preset files MUST use the .dspreset file extension
   * Reverb
   * Delay
   * Convolution (high CPU usage)
+- Effect Parameter Binding:
+  * Always use FX_ prefix for effect parameters (e.g., FX_REVERB_WET_LEVEL)
+  * Include position attribute in bindings to target specific effects
+  * Place effect parameters as direct attributes, not in a <parameters> element
+  Example:
+  <ui>
+    <labeled-knob label="Reverb Amount" type="float" minValue="0" maxValue="1">
+      <binding type="effect" level="instrument" position="0" parameter="FX_REVERB_WET_LEVEL" />
+    </labeled-knob>
+  </ui>
+  <effects>
+    <effect type="reverb" wetLevel="0.2" roomSize="0.3" damping="0.3" />
+  </effects>
+- Common Effect Parameters:
+  * Reverb: FX_REVERB_WET_LEVEL, FX_REVERB_ROOM_SIZE
+  * Delay: FX_DELAY_TIME, FX_DELAY_FEEDBACK
+  * Filter: FX_FILTER_FREQUENCY, FX_FILTER_RESONANCE
 - Apply effects strategically:
   * Use bus effects for shared processing
   * Consider CPU impact of convolution effects
