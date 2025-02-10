@@ -133,14 +133,14 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
     tools: [
       {
         name: "analyze_wav_samples",
-        description: "Analyze WAV files to get sample lengths and metadata. Use this tool to get accurate end markers for your samples to prevent looping issues in DecentSampler.",
+        description: "Analyze WAV files to get sample lengths and metadata. Use this tool to get accurate end markers for your samples to prevent looping issues in DecentSampler. IMPORTANT: Always use absolute paths (e.g., 'C:/Users/username/Documents/Samples/kick.wav') rather than relative paths.",
         inputSchema: {
           type: "object",
           properties: {
             paths: {
               type: "array",
               items: { type: "string" },
-              description: "Array of paths to WAV files to analyze"
+              description: "Array of absolute paths to WAV files to analyze (e.g., ['C:/Users/username/Documents/Samples/kick.wav'])"
             }
           },
           required: ["paths"]
@@ -151,10 +151,11 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
         description: `Generate DecentSampler <groups> XML for drum kits.
   
 Best Practices:
+- IMPORTANT: Always use absolute paths (e.g., 'C:/Users/username/Documents/Samples/kick.wav') rather than relative paths
 - Group all samples for a drum piece (e.g., all kick mics) into a single group to prevent voice conflicts
 - Each sample should have start/end markers to prevent looping issues
   * Use the analyze_wav_samples tool to get accurate sample lengths:
-    analyze_wav_samples(["Kick_Close_Soft.wav"]) -> {"sampleLength": 60645}
+    analyze_wav_samples(["C:/Users/username/Documents/Samples/Kick_Close_Soft.wav"]) -> {"sampleLength": 60645}
     Then use start="0" end="60645" in your sample definition
 - When using multiple mic positions (e.g., Close, OH, Room), include them all in the same group
 - Use velocity layers within a group to control dynamics
@@ -166,11 +167,11 @@ Example Structure:
     "rootNote": 36,
     "samples": [
       // All mic positions for soft velocity
-      {"path": "Kick_Close_Soft.wav", "start": 0, "end": 60645},  // Length from analyze_wav_samples
-      {"path": "Kick_OH_L_Soft.wav", "start": 0, "end": 60000},
-      {"path": "Kick_OH_R_Soft.wav", "start": 0, "end": 60000},
+      {"path": "C:/Users/username/Documents/Samples/Kick_Close_Soft.wav", "start": 0, "end": 60645},  // Length from analyze_wav_samples
+      {"path": "C:/Users/username/Documents/Samples/Kick_OH_L_Soft.wav", "start": 0, "end": 60000},
+      {"path": "C:/Users/username/Documents/Samples/Kick_OH_R_Soft.wav", "start": 0, "end": 60000},
       // All mic positions for medium velocity
-      {"path": "Kick_Close_Medium.wav", "start": 0, "end": 70162},  // Length from analyze_wav_samples
+      {"path": "C:/Users/username/Documents/Samples/Kick_Close_Medium.wav", "start": 0, "end": 70162},  // Length from analyze_wav_samples
       ...
     ]
   }]
