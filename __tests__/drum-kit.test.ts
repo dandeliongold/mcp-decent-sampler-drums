@@ -101,7 +101,7 @@ describe('generateGroupsXml', () => {
     };
 
     const expected = `<groups>
-  <group name="Kick" ampVelTrack="1" tuning="0.0">
+  <group name="Kick" ampVelTrack="1">
       <sample path="samples/kick.wav" rootNote="36" loNote="36" hiNote="36" />
   </group>
 </groups>`;
@@ -127,11 +127,11 @@ describe('generateGroupsXml', () => {
     };
 
     const expected = `<groups>
-  <group name="Kick" ampVelTrack="1" tuning="0.0">
+  <group name="Kick" ampVelTrack="1">
       <sample path="samples/kick.wav" rootNote="36" loNote="36" hiNote="36" />
   </group>
 
-  <group name="Snare" ampVelTrack="1" tuning="0.0">
+  <group name="Snare" ampVelTrack="1">
       <sample path="samples/snare.wav" rootNote="38" loNote="38" hiNote="38" />
   </group>
 </groups>`;
@@ -160,7 +160,7 @@ describe('generateGroupsXml', () => {
     };
 
     const expected = `<groups>
-  <group name="Kick" ampVelTrack="1" tuning="0.0">
+  <group name="Kick" ampVelTrack="1">
       <sample path="samples/kick_soft.wav" rootNote="36" loNote="36" hiNote="36" loVel="0" hiVel="63" />
       <sample path="samples/kick_hard.wav" rootNote="36" loNote="36" hiNote="36" loVel="64" hiVel="127" />
   </group>
@@ -182,7 +182,7 @@ describe('generateGroupsXml', () => {
     };
 
     const expected = `<groups>
-  <group name="Kick" ampVelTrack="1" tuning="0.0">
+  <group name="Kick" ampVelTrack="1">
       <sample path="samples/kick.wav" volume="-6dB" rootNote="36" loNote="36" hiNote="36" />
   </group>
 </groups>`;
@@ -207,7 +207,7 @@ describe('generateGroupsXml', () => {
     };
 
     const expected = `<groups>
-  <group name="HiHat" ampVelTrack="1" tuning="0.0" tags="closed_hihat" silencedByTags="open_hihat" silencingMode="fast">
+  <group name="HiHat" ampVelTrack="1" tags="closed_hihat" silencedByTags="open_hihat" silencingMode="fast">
       <sample path="samples/hihat_closed.wav" rootNote="42" loNote="42" hiNote="42" />
   </group>
 </groups>`;
@@ -237,7 +237,7 @@ describe('generateGroupsXml', () => {
     };
 
     const expected = `<groups seqMode="round_robin" seqLength="3">
-  <group name="Kick" ampVelTrack="1" tuning="0.0">
+  <group name="Kick" ampVelTrack="1">
       <sample path="samples/kick_1.wav" rootNote="36" loNote="36" hiNote="36" seqPosition="1" />
       <sample path="samples/kick_2.wav" rootNote="36" loNote="36" hiNote="36" seqPosition="2" />
       <sample path="samples/kick_3.wav" rootNote="36" loNote="36" hiNote="36" seqPosition="3" />
@@ -313,7 +313,7 @@ describe('generateGroupsXml', () => {
     expect(xml).toContain('seqMode="round_robin"');
     expect(xml).toContain('seqLength="4"');
     // Group override
-    expect(xml).toContain('group name="Kick" ampVelTrack="1" tuning="0.0" seqMode="random" seqLength="2" seqPosition="1"');
+    expect(xml).toContain('group name="Kick" ampVelTrack="1" seqMode="random" seqLength="2" seqPosition="1"');
     // Sample overrides
     expect(xml).toContain('seqPosition="2"');
     expect(xml).toContain('seqMode="true_random" seqPosition="3"');
@@ -332,7 +332,7 @@ describe('generateGroupsXml', () => {
     };
 
     const expected = `<groups>
-  <group name="Hi-Hat & Cymbal" ampVelTrack="1" tuning="0.0">
+  <group name="Hi-Hat & Cymbal" ampVelTrack="1">
       <sample path="samples/hihat & cymbal.wav" rootNote="42" loNote="42" hiNote="42" />
   </group>
 </groups>`;

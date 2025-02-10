@@ -13,6 +13,7 @@ import {
 import { PRESET_PROMPT } from "./prompts/preset_guidelines.js";
 import { analyzeWavFile } from './wav-analysis.js';
 import { DrumKitConfig, generateGroupsXml, isDrumKitConfig } from './drum-kit.js';
+import { DrumControlsConfig, configureDrumControls } from './drum-controls.js';
 import { configureRoundRobin } from './round-robin.js';
 
 const server = new Server(
@@ -63,6 +64,76 @@ server.setRequestHandler(GetPromptRequestSchema, async (request) => {
 server.setRequestHandler(ListToolsRequestSchema, async () => {
   return {
     tools: [
+      {
+        name: "configure_drum_controls",
+        description: "Configure global pitch and envelope controls for each drum type.\n\nThis tool will:\n- Add per-drum pitch controls with customizable ranges\n- Configure ADSR envelope settings for natural decay control\n- Generate proper XML structure for global drum controls",
+        inputSchema: {
+          type: "object",
+          properties: {
+            drumControls: {
+              type: "object",
+              additionalProperties: {
+                type: "object",
+                properties: {
+                  pitch: {
+                    type: "object",
+                    properties: {
+                      default: { 
+                        type: "number",
+                        description: "Default pitch in semitones (0 = no change)"
+                      },
+                      min: { 
+                        type: "number",
+                        description: "Minimum pitch adjustment (e.g. -12 semitones)"
+                      },
+                      max: { 
+                        type: "number",
+                        description: "Maximum pitch adjustment (e.g. +12 semitones)"
+                      }
+                    },
+                    required: ["default"]
+                  },
+                  envelope: {
+                    type: "object",
+                    properties: {
+                      attack: { 
+                        type: "number",
+                        description: "Attack time in seconds"
+                      },
+                      decay: { 
+                        type: "number",
+                        description: "Decay time in seconds"
+                      },
+                      sustain: { 
+                        type: "number",
+                        description: "Sustain level (0-1)"
+                      },
+                      release: { 
+                        type: "number",
+                        description: "Release time in seconds"
+                      },
+                      attackCurve: { 
+                        type: "number",
+                        description: "-100 to 100, Default: -100 (logarithmic)"
+                      },
+                      decayCurve: { 
+                        type: "number",
+                        description: "-100 to 100, Default: 100 (exponential)"
+                      },
+                      releaseCurve: { 
+                        type: "number",
+                        description: "-100 to 100, Default: 100 (exponential)"
+                      }
+                    },
+                    required: ["attack", "decay", "sustain", "release"]
+                  }
+                }
+              }
+            }
+          },
+          required: ["drumControls"]
+        }
+      },
       {
         name: "configure_round_robin",
         description: "Configure round robin sample playback for a set of samples.\n\nThis tool will:\n- Validate sequence positions\n- Verify sample files exist\n- Generate proper XML structure for round robin playback",
@@ -315,6 +386,45 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           text: xml
         }]
       };
+    }
+
+    case "configure_drum_controls": {
+      const args = request.params.arguments;
+      if (!args || typeof args !== 'object' || !args.drumControls) {
+        throw new McpError(
+          ErrorCode.InvalidParams,
+          "Invalid arguments: expected object with drumControls"
+        );
+      }
+
+      try {
+        // Convert the input format to our DrumControlsConfig format
+        const drumControlsConfig: DrumControlsConfig = {
+          drums: Object.entries(args.drumControls).map(([name, controls]) => ({
+            name,
+            ...(controls as any)
+          }))
+        };
+
+        // Configure and validate the drum controls
+        const config = configureDrumControls(drumControlsConfig);
+
+        // Generate XML with the validated configuration
+        const xml = generateGroupsXml(config);
+        return {
+          content: [{
+            type: "text",
+            text: xml
+          }]
+        };
+      } catch (error: unknown) {
+        if (error instanceof McpError) throw error;
+        const message = error instanceof Error ? error.message : String(error);
+        throw new McpError(
+          ErrorCode.InternalError,
+          `Failed to configure drum controls: ${message}`
+        );
+      }
     }
 
     default:

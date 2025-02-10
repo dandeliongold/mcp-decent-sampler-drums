@@ -1,3 +1,5 @@
+import { isDrumPitchConfig, isDrumEnvelopeConfig } from './drum-controls.js';
+
 export interface DrumKitConfig {
   globalSettings: {
     velocityLayers?: {
@@ -8,6 +10,24 @@ export interface DrumKitConfig {
     roundRobin?: {
       mode: "round_robin" | "random" | "true_random" | "always",
       length?: number  // Optional: for explicit sequence length
+    },
+    drumControls?: {
+      [drumName: string]: {
+        pitch?: {
+          default: number,  // Default pitch in semitones (0 = no change)
+          min?: number,     // Minimum pitch adjustment (e.g. -12 semitones)
+          max?: number      // Maximum pitch adjustment (e.g. +12 semitones)
+        },
+        envelope?: {
+          attack: number,   // Attack time in seconds
+          decay: number,    // Decay time in seconds
+          sustain: number,  // Sustain level (0-1)
+          release: number,  // Release time in seconds
+          attackCurve?: number,  // -100 to 100, Default: -100 (logarithmic)
+          decayCurve?: number,   // -100 to 100, Default: 100 (exponential)
+          releaseCurve?: number  // -100 to 100, Default: 100 (exponential)
+        }
+      }
     }
   },
   drumPieces: {
@@ -61,6 +81,32 @@ export function generateGroupsXml(config: DrumKitConfig): string {
       groupAttrs += ` seqPosition="${piece.seqPosition}"`;
     }
 
+    // Add drum controls if configured
+    const drumControls = globalSettings.drumControls?.[piece.name];
+    let envelopeAttrs = '';
+    let pitchControl = '';
+    
+    if (drumControls) {
+      // Add envelope attributes if configured
+      if (drumControls.envelope) {
+        const env = drumControls.envelope;
+        envelopeAttrs = ` attack="${env.attack}" decay="${env.decay}" sustain="${env.sustain}" release="${env.release}"`;
+        if (env.attackCurve !== undefined) envelopeAttrs += ` attackCurve="${env.attackCurve}"`;
+        if (env.decayCurve !== undefined) envelopeAttrs += ` decayCurve="${env.decayCurve}"`;
+        if (env.releaseCurve !== undefined) envelopeAttrs += ` releaseCurve="${env.releaseCurve}"`;
+      }
+      
+      // Add pitch control if configured
+      if (drumControls.pitch) {
+        const pitch = drumControls.pitch;
+        groupAttrs += ` tuning="${pitch.default}"`;
+        pitchControl = `      <control type="pitch" name="${piece.name} Pitch" default="${pitch.default}"` +
+          (pitch.min !== undefined ? ` minimum="${pitch.min}"` : '') +
+          (pitch.max !== undefined ? ` maximum="${pitch.max}"` : '') +
+          `>\n        <binding type="general" level="group" position="0" parameter="groupTuning" />\n      </control>\n`;
+      }
+    }
+
     const sampleElements: string[] = [];
     
     for (const sample of piece.samples) {
@@ -93,7 +139,8 @@ export function generateGroupsXml(config: DrumKitConfig): string {
     }
 
     groups.push(
-      `  <group name="${piece.name}" ampVelTrack="1" tuning="0.0"${groupAttrs}>\n` +
+      `  <group name="${piece.name}" ampVelTrack="1"${groupAttrs}${envelopeAttrs}>\n` +
+      (pitchControl ? pitchControl : '') +
       `${sampleElements.join('\n')}\n` +
       `  </group>`
     );
@@ -139,6 +186,27 @@ export function isDrumKitConfig(obj: unknown): obj is DrumKitConfig {
         !['round_robin', 'random', 'true_random', 'always'].includes(rr.mode) ||
         (rr.length !== undefined && typeof rr.length !== 'number')) {
       return false;
+    }
+  }
+
+  // Check drum controls if they exist
+  if (config.globalSettings.drumControls !== undefined) {
+    const controls = config.globalSettings.drumControls;
+    if (typeof controls !== 'object' || controls === null) {
+      return false;
+    }
+
+    // Check each drum's controls using type guards
+    for (const drumName in controls) {
+      const drumControl = controls[drumName];
+      
+      if (drumControl.pitch !== undefined && !isDrumPitchConfig(drumControl.pitch)) {
+        return false;
+      }
+
+      if (drumControl.envelope !== undefined && !isDrumEnvelopeConfig(drumControl.envelope)) {
+        return false;
+      }
     }
   }
 
