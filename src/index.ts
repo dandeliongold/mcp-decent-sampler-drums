@@ -123,7 +123,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
     tools: [
       {
         name: "analyze_wav_samples",
-        description: "Analyze WAV files to get sample lengths and metadata. Use this tool to get accurate end markers for your samples to prevent looping issues in DecentSampler. IMPORTANT: Always use absolute paths (e.g., 'C:/Users/username/Documents/Samples/kick.wav') rather than relative paths.",
+        description: "Analyze WAV files to detect common issues in drum kit samples such as:\n- Non-standard WAV headers that may cause playback issues\n- Metadata inconsistencies that could affect multi-mic setups\n\nIMPORTANT: Always use absolute paths (e.g., 'C:/Users/username/Documents/Samples/kick.wav') rather than relative paths.",
         inputSchema: {
           type: "object",
           properties: {

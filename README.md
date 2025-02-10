@@ -10,9 +10,10 @@ This TypeScript-based MCP server provides tools for working with DecentSampler d
 
 ### Tools
 
-- `analyze_wav_samples` - Analyze WAV files to get metadata and sample information
-  - Provides sample rate, channel count, and bit depth information
-  - Useful for understanding sample characteristics
+- `analyze_wav_samples` - Analyze WAV files to validate drum kit samples
+  - Validates WAV header formatting
+  - Verifies metadata consistency for multi-mic setups
+  - Helpful for troubleshooting potential playback issues before preset creation
 
 - `generate_drum_groups` - Generate DecentSampler `<groups>` XML for drum kits
   - Flexible velocity handling:

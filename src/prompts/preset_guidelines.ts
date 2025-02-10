@@ -164,4 +164,16 @@ Step 2: Generate Groups
 - Pass your complete configuration to generate_drum_groups
 - Verify the generated XML includes:
   * Proper velocity layer mapping
-  * Correct mic position organization`
+  * Correct mic position organization
+
+8. Troubleshooting Sample Issues:
+
+Before creating your preset, we recommend that you use analyze_wav_samples to verify sample compatibility:
+- Verify WAV headers are properly formatted
+- Ensure metadata is consistent across all samples in your kit
+
+Example workflow:
+1. Analyze all samples for a drum piece:
+   analyze_wav_samples(['kick_close.wav', 'kick_oh.wav', 'kick_room.wav'])
+2. Compare the analysis results to verify consistency
+3. Address any issues before creating the preset`
