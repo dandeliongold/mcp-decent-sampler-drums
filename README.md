@@ -34,6 +34,23 @@ The server includes comprehensive preset building guidelines in `src/prompts/pre
 
 When using this MCP server to generate presets, AI assistants should always reference the `preset_guidelines` prompt to ensure adherence to Decent Sampler best practices.
 
+## Resources
+
+### About Decent Sampler
+
+Decent Sampler is a FREE sampling plugin that allows you to play samples in the Decent Sampler format.
+
+### Useful Links
+
+- [Download Decent Sampler Plugin](https://www.decentsamples.com/product/decent-sampler-plugin/)
+- [Decent Sampler Developer Resources](https://www.decentsamples.com/decent-sampler-developer-resources/)
+
+### Sample Sources
+
+To create your own drum kits, you'll first need samples. If you don't already have samples ready to go and want to start experimenting, you can start by exploring [FreeSound.org](https://freesound.org/) which is a collaborative database of creative-commons licensed sounds.  
+
+Almost any sound can be used as a drum or percussive instrument.  The goal of this MCP server is to make it easier to set up your own presets, whether you're playing your kitchen utensils into your phone, or recording a full kit in a studio.
+
 ## Input Schema
 
 AI assistants should consult the `preset_guidelines` prompt before generating configurations with the schema below. The guidelines contain essential context for creating optimal preset structures.
