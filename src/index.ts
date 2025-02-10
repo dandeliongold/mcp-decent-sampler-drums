@@ -79,7 +79,7 @@ function generateGroupsXml(config: DrumKitConfig): string {
 const server = new Server(
   {
     name: "decent-sampler-drums",
-    version: "0.0.4",
+    version: "0.0.5",
   },
   {
     capabilities: {
