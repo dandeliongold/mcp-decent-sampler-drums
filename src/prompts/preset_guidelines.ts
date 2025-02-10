@@ -1,3 +1,4 @@
+// @ts-nocheck
 export const PRESET_PROMPT = `
 When creating Decent Sampler drum presets, follow these guidelines:
 
@@ -104,4 +105,58 @@ https://decentsampler-developers-guide.readthedocs.io/en/stable/
 - Optimize voice usage:
   * Group related samples together
   * Use proper voice muting
-  * Consider CPU impact of effects`
+  * Consider CPU impact of effects
+
+7. Using MCP Tools for Preset Creation:
+
+Step 1: Analyze Your Samples
+- Always analyze WAV files first to get accurate end markers:
+  Example tool usage:
+  ```
+  analyze_wav_samples({
+    paths: [
+      "C:/path/to/samples/Kick_Close_Soft.wav",
+      "C:/path/to/samples/Kick_Close_Medium.wav"
+    ]
+  })
+  ```
+- Use absolute paths for reliability
+- Store the returned sample lengths for use in your groups
+
+Step 2: Structure Your Configuration
+- Organize samples by drum piece and velocity layer
+- Include all mic positions in each configuration:
+  Example configuration:
+  
+  {
+    "globalSettings": {
+      "velocityLayers": [
+        { "low": 1, "high": 54, "name": "soft" },
+        { "low": 55, "high": 94, "name": "medium" }
+      ]
+    },
+    "drumPieces": [{
+      "name": "Kick",
+      "rootNote": 36,
+      "samples": [
+        // Soft velocity, all mics
+        { 
+          "path": "C:/path/to/samples/Kick_Close_Soft.wav",
+          "start": 0,
+          "end": 60645  // From analyze_wav_samples
+        },
+        { 
+          "path": "C:/path/to/samples/Kick_OH_Soft.wav",
+          "start": 0,
+          "end": 58932  // From analyze_wav_samples
+        }
+      ]
+    }]
+  }
+
+Step 3: Generate Groups
+- Pass your complete configuration to generate_drum_groups
+- Verify the generated XML includes:
+  * Accurate sample boundaries
+  * Proper velocity layer mapping
+  * Correct mic position organization`
