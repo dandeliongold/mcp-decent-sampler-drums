@@ -25,16 +25,18 @@ This TypeScript-based MCP server provides tools for working with DecentSampler d
 
 ### Prompts
 
-The server includes comprehensive preset building guidelines available in `src/prompts/preset_guidelines.ts`. These guidelines cover:
-- Complete XML structure and organization
-- UI configuration
-- Bus routing and effects setup
+The server includes comprehensive preset building guidelines in `src/prompts/preset_guidelines.ts`. AI assistants should reference these guidelines when helping users create presets, as they provide:
+- Complete XML structure specifications
+- UI configuration patterns
+- Bus routing and effects setup rules
 - Sample configuration best practices
-- Performance optimization tips
+- Performance optimization strategies
 
-For detailed preset creation guidance, refer to the guidelines in the prompts directory.
+When using this MCP server to generate presets, AI assistants should always reference the `preset_guidelines` prompt to ensure adherence to Decent Sampler best practices.
 
 ## Input Schema
+
+AI assistants should consult the `preset_guidelines` prompt before generating configurations with the schema below. The guidelines contain essential context for creating optimal preset structures.
 
 The `generate_drum_groups` tool accepts a configuration object with the following structure:
 
