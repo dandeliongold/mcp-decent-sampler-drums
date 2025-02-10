@@ -16,8 +16,13 @@ export interface DrumKitConfig {
     samples: {
       path: string,
       volume?: string,
-      seqPosition?: number  // Position in round robin sequence
+      seqPosition?: number,  // Position in round robin sequence
+      seqMode?: "round_robin" | "random" | "true_random" | "always",
+      seqLength?: number
     }[],
+    seqMode?: "round_robin" | "random" | "true_random" | "always",
+    seqLength?: number,
+    seqPosition?: number,
     muting?: {
       tags: string[],
       silencedByTags: string[]
@@ -40,84 +45,58 @@ export function generateGroupsXml(config: DrumKitConfig): string {
   const groups: string[] = [];
 
   for (const piece of drumPieces) {
-    const mutingAttrs = piece.muting 
+    // Combine muting and round robin attributes for group
+    let groupAttrs = piece.muting 
       ? ` tags="${piece.muting.tags.join(',')}" silencedByTags="${piece.muting.silencedByTags.join(',')}" silencingMode="fast"`
       : '';
-
-    // Group samples by sequence position if round robin is enabled
-    const samplesBySeqPosition = new Map<number, typeof piece.samples>();
     
-    if (globalSettings.roundRobin && globalSettings.roundRobin.mode !== 'always') {
-      // Initialize map with empty arrays for each position
-      const maxSeqPosition = Math.max(...piece.samples
-        .map(s => s.seqPosition || 1)
-      );
-      for (let i = 1; i <= maxSeqPosition; i++) {
-        samplesBySeqPosition.set(i, []);
+    // Add group-level round robin settings if present
+    if (piece.seqMode) {
+      groupAttrs += ` seqMode="${piece.seqMode}"`;
+    }
+    if (piece.seqLength) {
+      groupAttrs += ` seqLength="${piece.seqLength}"`;
+    }
+    if (piece.seqPosition) {
+      groupAttrs += ` seqPosition="${piece.seqPosition}"`;
+    }
+
+    const sampleElements: string[] = [];
+    
+    for (const sample of piece.samples) {
+      const volumeAttr = sample.volume ? ` volume="${sample.volume}"` : '';
+      let velocityAttrs = '';
+      if (globalSettings.velocityLayers) {
+        const layerIndex = piece.samples.indexOf(sample);
+        if (layerIndex < globalSettings.velocityLayers.length) {
+          const layer = globalSettings.velocityLayers[layerIndex];
+          velocityAttrs = ` loVel="${layer.low}" hiVel="${layer.high}"`;
+        }
       }
       
-      // Group samples by their sequence position
-      for (const sample of piece.samples) {
-        const seqPos = sample.seqPosition || 1;
-        const samples = samplesBySeqPosition.get(seqPos) || [];
-        samples.push(sample);
-        samplesBySeqPosition.set(seqPos, samples);
+      // Add sample-level round robin settings
+      let sampleRRAttrs = '';
+      if (sample.seqMode) {
+        sampleRRAttrs += ` seqMode="${sample.seqMode}"`;
+      }
+      if (sample.seqLength) {
+        sampleRRAttrs += ` seqLength="${sample.seqLength}"`;
+      }
+      if (sample.seqPosition) {
+        sampleRRAttrs += ` seqPosition="${sample.seqPosition}"`;
       }
 
-      // Generate a group for each sequence position
-      for (const [seqPos, samples] of samplesBySeqPosition) {
-        const sampleElements: string[] = [];
-        
-        for (const sample of samples) {
-          const volumeAttr = sample.volume ? ` volume="${sample.volume}"` : '';
-          let velocityAttrs = '';
-          if (globalSettings.velocityLayers) {
-            const layerIndex = piece.samples.indexOf(sample);
-            if (layerIndex < globalSettings.velocityLayers.length) {
-              const layer = globalSettings.velocityLayers[layerIndex];
-              velocityAttrs = ` loVel="${layer.low}" hiVel="${layer.high}"`;
-            }
-          }
-          
-          sampleElements.push(
-            `      <sample path="${sample.path}"${volumeAttr} rootNote="${piece.rootNote}" ` +
-            `loNote="${piece.rootNote}" hiNote="${piece.rootNote}"${velocityAttrs} />`
-          );
-        }
-
-        groups.push(
-          `  <group name="${piece.name}" seqPosition="${seqPos}" ampVelTrack="1" tuning="0.0"${mutingAttrs}>\n` +
-          `${sampleElements.join('\n')}\n` +
-          `  </group>`
-        );
-      }
-    } else {
-      // If round robin is disabled, keep original behavior
-      const sampleElements: string[] = [];
-      
-      for (const sample of piece.samples) {
-        const volumeAttr = sample.volume ? ` volume="${sample.volume}"` : '';
-        let velocityAttrs = '';
-        if (globalSettings.velocityLayers) {
-          const layerIndex = piece.samples.indexOf(sample);
-          if (layerIndex < globalSettings.velocityLayers.length) {
-            const layer = globalSettings.velocityLayers[layerIndex];
-            velocityAttrs = ` loVel="${layer.low}" hiVel="${layer.high}"`;
-          }
-        }
-        
-        sampleElements.push(
-          `      <sample path="${sample.path}"${volumeAttr} rootNote="${piece.rootNote}" ` +
-          `loNote="${piece.rootNote}" hiNote="${piece.rootNote}"${velocityAttrs} />`
-        );
-      }
-
-      groups.push(
-        `  <group name="${piece.name}" ampVelTrack="1" tuning="0.0"${mutingAttrs}>\n` +
-        `${sampleElements.join('\n')}\n` +
-        `  </group>`
+      sampleElements.push(
+        `      <sample path="${sample.path}"${volumeAttr} rootNote="${piece.rootNote}" ` +
+        `loNote="${piece.rootNote}" hiNote="${piece.rootNote}"${velocityAttrs}${sampleRRAttrs} />`
       );
     }
+
+    groups.push(
+      `  <group name="${piece.name}" ampVelTrack="1" tuning="0.0"${groupAttrs}>\n` +
+      `${sampleElements.join('\n')}\n` +
+      `  </group>`
+    );
   }
 
   return `<groups${roundRobinAttrs}>\n${groups.join('\n\n')}\n</groups>`;
@@ -174,11 +153,32 @@ export function isDrumKitConfig(obj: unknown): obj is DrumKitConfig {
     typeof piece.name === 'string' &&
     typeof piece.rootNote === 'number' &&
     Array.isArray(piece.samples) &&
-    piece.samples.every(sample => 
-      sample &&
-      typeof sample === 'object' &&
-      typeof sample.path === 'string' &&
-      (sample.seqPosition === undefined || typeof sample.seqPosition === 'number')
-    )
+    piece.samples.every(sample => {
+      if (!sample || typeof sample !== 'object' || typeof sample.path !== 'string') {
+        return false;
+      }
+
+      // Validate optional fields
+      if (sample.seqPosition !== undefined && typeof sample.seqPosition !== 'number') {
+        return false;
+      }
+      if (sample.seqMode !== undefined && 
+          !['round_robin', 'random', 'true_random', 'always'].includes(sample.seqMode)) {
+        return false;
+      }
+      if (sample.seqLength !== undefined && typeof sample.seqLength !== 'number') {
+        return false;
+      }
+      if (sample.volume !== undefined && typeof sample.volume !== 'string') {
+        return false;
+      }
+
+      return true;
+    }) &&
+    // Validate group-level round robin settings
+    (piece.seqMode === undefined || 
+      ['round_robin', 'random', 'true_random', 'always'].includes(piece.seqMode)) &&
+    (piece.seqLength === undefined || typeof piece.seqLength === 'number') &&
+    (piece.seqPosition === undefined || typeof piece.seqPosition === 'number')
   );
 }

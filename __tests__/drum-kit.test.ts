@@ -215,6 +215,110 @@ describe('generateGroupsXml', () => {
     expect(generateGroupsXml(config)).toBe(expected);
   });
 
+  it('should include round robin configuration at global level', () => {
+    const config: DrumKitConfig = {
+      globalSettings: {
+        roundRobin: {
+          mode: 'round_robin',
+          length: 3
+        }
+      },
+      drumPieces: [
+        {
+          name: 'Kick',
+          rootNote: 36,
+          samples: [
+            { path: 'samples/kick_1.wav', seqPosition: 1 },
+            { path: 'samples/kick_2.wav', seqPosition: 2 },
+            { path: 'samples/kick_3.wav', seqPosition: 3 }
+          ]
+        }
+      ]
+    };
+
+    const expected = `<groups seqMode="round_robin" seqLength="3">
+  <group name="Kick" ampVelTrack="1" tuning="0.0">
+      <sample path="samples/kick_1.wav" rootNote="36" loNote="36" hiNote="36" seqPosition="1" />
+      <sample path="samples/kick_2.wav" rootNote="36" loNote="36" hiNote="36" seqPosition="2" />
+      <sample path="samples/kick_3.wav" rootNote="36" loNote="36" hiNote="36" seqPosition="3" />
+  </group>
+</groups>`;
+
+    expect(generateGroupsXml(config)).toBe(expected);
+  });
+
+  it('should handle different round robin modes', () => {
+    const modes: Array<'round_robin' | 'random' | 'true_random' | 'always'> = [
+      'round_robin',
+      'random',
+      'true_random',
+      'always'
+    ];
+
+    modes.forEach(mode => {
+      const config: DrumKitConfig = {
+        globalSettings: {
+          roundRobin: {
+            mode,
+            ...(mode !== 'always' && { length: 2 })
+          }
+        },
+        drumPieces: [
+          {
+            name: 'Kick',
+            rootNote: 36,
+            samples: [
+              { path: 'samples/kick_1.wav', seqPosition: 1 },
+              { path: 'samples/kick_2.wav', seqPosition: 2 }
+            ]
+          }
+        ]
+      };
+
+      const xml = generateGroupsXml(config);
+      expect(xml).toContain(`seqMode="${mode}"`);
+      if (mode !== 'always') {
+        expect(xml).toContain('seqLength="2"');
+      } else {
+        expect(xml).not.toContain('seqLength');
+      }
+    });
+  });
+
+  it('should handle round robin settings inheritance', () => {
+    const config: DrumKitConfig = {
+      globalSettings: {
+        roundRobin: {
+          mode: 'round_robin',
+          length: 4
+        }
+      },
+      drumPieces: [
+        {
+          name: 'Kick',
+          rootNote: 36,
+          seqMode: 'random',
+          seqLength: 2,
+          seqPosition: 1,
+          samples: [
+            { path: 'samples/kick_1.wav', seqPosition: 2 },
+            { path: 'samples/kick_2.wav', seqMode: 'true_random', seqPosition: 3 }
+          ]
+        }
+      ]
+    };
+
+    const xml = generateGroupsXml(config);
+    // Global settings
+    expect(xml).toContain('seqMode="round_robin"');
+    expect(xml).toContain('seqLength="4"');
+    // Group override
+    expect(xml).toContain('group name="Kick" ampVelTrack="1" tuning="0.0" seqMode="random" seqLength="2" seqPosition="1"');
+    // Sample overrides
+    expect(xml).toContain('seqPosition="2"');
+    expect(xml).toContain('seqMode="true_random" seqPosition="3"');
+  });
+
   it('should handle special characters in names', () => {
     const config: DrumKitConfig = {
       globalSettings: {},
