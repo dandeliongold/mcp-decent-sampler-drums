@@ -88,6 +88,190 @@ describe('isDrumKitConfig', () => {
 });
 
 describe('generateGroupsXml', () => {
+  it('should include pitch control configuration', () => {
+    const config: DrumKitConfig = {
+      globalSettings: {
+        drumControls: {
+          'Kick': {
+            pitch: {
+              default: -12,
+              min: -24,
+              max: 0
+            }
+          }
+        }
+      },
+      drumPieces: [
+        {
+          name: 'Kick',
+          rootNote: 36,
+          samples: [{ path: 'samples/kick.wav' }]
+        }
+      ]
+    };
+
+    const expected = `<groups>
+  <group name="Kick" ampVelTrack="1" tuning="-12">
+      <control type="pitch" name="Kick Pitch" default="-12" minimum="-24" maximum="0">
+        <binding type="general" level="group" position="0" parameter="groupTuning" />
+      </control>
+      <sample path="samples/kick.wav" rootNote="36" loNote="36" hiNote="36" />
+  </group>
+</groups>`;
+
+    expect(generateGroupsXml(config)).toBe(expected);
+  });
+
+  it('should include envelope configuration', () => {
+    const config: DrumKitConfig = {
+      globalSettings: {
+        drumControls: {
+          'Snare': {
+            envelope: {
+              attack: 0.001,
+              decay: 0.5,
+              sustain: 0.3,
+              release: 1.2,
+              attackCurve: -100,
+              decayCurve: 100,
+              releaseCurve: 50
+            }
+          }
+        }
+      },
+      drumPieces: [
+        {
+          name: 'Snare',
+          rootNote: 38,
+          samples: [{ path: 'samples/snare.wav' }]
+        }
+      ]
+    };
+
+    const expected = `<groups>
+  <group name="Snare" ampVelTrack="1" attack="0.001" decay="0.5" sustain="0.3" release="1.2" attackCurve="-100" decayCurve="100" releaseCurve="50">
+      <sample path="samples/snare.wav" rootNote="38" loNote="38" hiNote="38" />
+  </group>
+</groups>`;
+
+    expect(generateGroupsXml(config)).toBe(expected);
+  });
+
+  it('should combine pitch and envelope controls', () => {
+    const config: DrumKitConfig = {
+      globalSettings: {
+        drumControls: {
+          'Tom': {
+            pitch: {
+              default: 0,
+              min: -12,
+              max: 12
+            },
+            envelope: {
+              attack: 0.001,
+              decay: 0.3,
+              sustain: 0,
+              release: 0.5
+            }
+          }
+        }
+      },
+      drumPieces: [
+        {
+          name: 'Tom',
+          rootNote: 45,
+          samples: [{ path: 'samples/tom.wav' }]
+        }
+      ]
+    };
+
+    const expected = `<groups>
+  <group name="Tom" ampVelTrack="1" tuning="0" attack="0.001" decay="0.3" sustain="0" release="0.5">
+      <control type="pitch" name="Tom Pitch" default="0" minimum="-12" maximum="12">
+        <binding type="general" level="group" position="0" parameter="groupTuning" />
+      </control>
+      <sample path="samples/tom.wav" rootNote="45" loNote="45" hiNote="45" />
+  </group>
+</groups>`;
+
+    expect(generateGroupsXml(config)).toBe(expected);
+  });
+
+  it('should handle multiple drums with different controls', () => {
+    const config: DrumKitConfig = {
+      globalSettings: {
+        drumControls: {
+          'Kick': {
+            pitch: {
+              default: -12,
+              min: -24,
+              max: 0
+            }
+          },
+          'Snare': {
+            envelope: {
+              attack: 0.001,
+              decay: 0.5,
+              sustain: 0.3,
+              release: 1.2
+            }
+          },
+          'HiHat': {
+            pitch: {
+              default: 0,
+              min: -12,
+              max: 12
+            },
+            envelope: {
+              attack: 0,
+              decay: 0.1,
+              sustain: 0,
+              release: 0.1
+            }
+          }
+        }
+      },
+      drumPieces: [
+        {
+          name: 'Kick',
+          rootNote: 36,
+          samples: [{ path: 'samples/kick.wav' }]
+        },
+        {
+          name: 'Snare',
+          rootNote: 38,
+          samples: [{ path: 'samples/snare.wav' }]
+        },
+        {
+          name: 'HiHat',
+          rootNote: 42,
+          samples: [{ path: 'samples/hihat.wav' }]
+        }
+      ]
+    };
+
+    const expected = `<groups>
+  <group name="Kick" ampVelTrack="1" tuning="-12">
+      <control type="pitch" name="Kick Pitch" default="-12" minimum="-24" maximum="0">
+        <binding type="general" level="group" position="0" parameter="groupTuning" />
+      </control>
+      <sample path="samples/kick.wav" rootNote="36" loNote="36" hiNote="36" />
+  </group>
+
+  <group name="Snare" ampVelTrack="1" attack="0.001" decay="0.5" sustain="0.3" release="1.2">
+      <sample path="samples/snare.wav" rootNote="38" loNote="38" hiNote="38" />
+  </group>
+
+  <group name="HiHat" ampVelTrack="1" tuning="0" attack="0" decay="0.1" sustain="0" release="0.1">
+      <control type="pitch" name="HiHat Pitch" default="0" minimum="-12" maximum="12">
+        <binding type="general" level="group" position="0" parameter="groupTuning" />
+      </control>
+      <sample path="samples/hihat.wav" rootNote="42" loNote="42" hiNote="42" />
+  </group>
+</groups>`;
+
+    expect(generateGroupsXml(config)).toBe(expected);
+  });
   it('should generate XML for a basic drum kit', () => {
     const config: DrumKitConfig = {
       globalSettings: {},
