@@ -112,14 +112,14 @@ https://decentsampler-developers-guide.readthedocs.io/en/stable/
 Step 1: Analyze Your Samples
 - Always analyze WAV files first to get accurate end markers:
   Example tool usage:
-  ```
+
   analyze_wav_samples({
     paths: [
       "C:/path/to/samples/Kick_Close_Soft.wav",
       "C:/path/to/samples/Kick_Close_Medium.wav"
     ]
   })
-  ```
+
 - Use absolute paths for reliability
 - Store the returned sample lengths for use in your groups
 
