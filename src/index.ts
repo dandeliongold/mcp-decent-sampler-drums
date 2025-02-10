@@ -8,12 +8,7 @@ import {
   ErrorCode,
   McpError,
 } from "@modelcontextprotocol/sdk/types.js";
-import { promisify } from 'util';
-import wavFileInfo from 'wav-file-info';
-
-const getWavInfo = promisify((path: string, callback: (err: Error | null, info: any) => void) => {
-  wavFileInfo.infoByFilename(path, callback);
-});
+import { parseFile } from 'music-metadata';
 
 interface WavAnalysis {
   path: string;
@@ -103,16 +98,19 @@ const server = new Server(
 
 async function analyzeWavFile(path: string): Promise<WavAnalysis> {
   try {
-    const info = await getWavInfo(path);
-    if (!info || !info.header) {
-      throw new Error('Invalid WAV file format');
+    const metadata = await parseFile(path);
+    
+    if (!metadata.format) {
+      throw new Error('No format information found in WAV file');
     }
-    
-    const duration = typeof info.duration === 'number' ? info.duration : 0;
-    const sampleRate = typeof info.header.sample_rate === 'number' ? info.header.sample_rate : 44100;
-    const channels = typeof info.header.num_channels === 'number' ? info.header.num_channels : 2;
-    const bitDepth = typeof info.header.bits_per_sample === 'number' ? info.header.bits_per_sample : 24;
-    
+
+    const {
+      duration = 0,
+      sampleRate = 44100,
+      numberOfChannels: channels = 2,
+      bitsPerSample: bitDepth = 24
+    } = metadata.format;
+
     return {
       path,
       sampleLength: Math.round(duration * sampleRate),

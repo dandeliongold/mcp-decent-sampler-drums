@@ -1,6 +1,6 @@
 {
   "name": "@dandeliongold/mcp-decent-sampler-drums",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "A Model Context Protocol server for building Decent Sampler drum kit sample presets.",
   "type": "module",
   "repository": {
@@ -23,7 +23,7 @@
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.4.1",
     "axios": "^1.7.9",
-    "wav-file-info": "^0.0.10"
+    "music-metadata": "^10.9.0"
   },
   "devDependencies": {
     "@types/node": "^20.17.17",
