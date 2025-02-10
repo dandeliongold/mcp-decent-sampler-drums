@@ -96,7 +96,8 @@ const server = new Server(
   }
 );
 
-async function analyzeWavFile(path: string): Promise<WavAnalysis> {
+// Exported for testing
+export async function analyzeWavFile(path: string): Promise<WavAnalysis> {
   try {
     const metadata = await parseFile(path);
     
