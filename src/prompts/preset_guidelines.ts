@@ -46,7 +46,6 @@ https://decentsampler-developers-guide.readthedocs.io/en/stable/
 - Set ampVelTrack for velocity sensitivity
 
 3. Sample Configuration:
-- Always specify start/end markers to prevent looping issues
 - Velocity layers are optional:
   * If omitted: Samples respond to all velocities naturally
   * If specified: Use loVel/hiVel for velocity ranges (e.g., soft=1-42, medium=43-85, hard=86-127)
@@ -111,21 +110,9 @@ https://decentsampler-developers-guide.readthedocs.io/en/stable/
 
 7. Using MCP Tools for Preset Creation:
 
-Step 1: Analyze Your Samples
-- Always analyze WAV files first to get accurate end markers:
-  Example tool usage:
+The analyze_wav_samples tool is available for analyzing WAV files to get metadata and sample information if needed.
 
-  analyze_wav_samples({
-    paths: [
-      "C:/path/to/samples/Kick_Close_Soft.wav",
-      "C:/path/to/samples/Kick_Close_Medium.wav"
-    ]
-  })
-
-- Use absolute paths for reliability
-- Store the returned sample lengths for use in your groups
-
-Step 2: Structure Your Configuration
+Step 1: Structure Your Configuration
 - Organize samples by drum piece
 - Include all mic positions in each configuration
 - Velocity layers are optional depending on your needs:
@@ -144,14 +131,10 @@ Example with velocity layers:
     "samples": [
       // Soft velocity, all mics
       { 
-        "path": "C:/path/to/samples/Kick_Close_Soft.wav",
-        "start": 0,
-        "end": 60645  // From analyze_wav_samples
+        "path": "C:/path/to/samples/Kick_Close_Soft.wav"
       },
       { 
-        "path": "C:/path/to/samples/Kick_OH_Soft.wav",
-        "start": 0,
-        "end": 58932  // From analyze_wav_samples
+        "path": "C:/path/to/samples/Kick_OH_Soft.wav"
       }
     ]
   }]
@@ -168,14 +151,10 @@ Example without velocity layers (simpler configuration):
     "samples": [
       // All mic positions
       { 
-        "path": "C:/path/to/samples/Kick_Close.wav",
-        "start": 0,
-        "end": 60645  // From analyze_wav_samples
+        "path": "C:/path/to/samples/Kick_Close.wav"
       },
       { 
-        "path": "C:/path/to/samples/Kick_OH.wav",
-        "start": 0,
-        "end": 58932  // From analyze_wav_samples
+        "path": "C:/path/to/samples/Kick_OH.wav"
       }
     ]
   }]
@@ -188,9 +167,8 @@ Choose your approach based on your needs:
   * You want a simpler configuration
   * You prefer to control dynamics purely through velocity-to-amplitude tracking
 
-Step 3: Generate Groups
+Step 2: Generate Groups
 - Pass your complete configuration to generate_drum_groups
 - Verify the generated XML includes:
-  * Accurate sample boundaries
   * Proper velocity layer mapping
   * Correct mic position organization`

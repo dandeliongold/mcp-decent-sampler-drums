@@ -29,8 +29,7 @@ interface DrumKitConfig {
     rootNote: number,
     samples: {
       path: string,
-      volume?: string,
-      sampleLength?: number  // Optional because it will be populated by analyze_wav_samples
+      volume?: string
     }[],
     muting?: {
       tags: string[],
@@ -52,9 +51,6 @@ function generateGroupsXml(config: DrumKitConfig): string {
     
     for (const sample of piece.samples) {
       const volumeAttr = sample.volume ? ` volume="${sample.volume}"` : '';
-      // end should be INDEX of last sample, which is length in samples - 1
-      const sampleLengthAttr = sample.sampleLength ? ` start="0" end="${sample.sampleLength-1}"` : '';
-      
       let velocityAttrs = '';
       if (globalSettings.velocityLayers) {
         const layerIndex = piece.samples.indexOf(sample);
@@ -65,7 +61,7 @@ function generateGroupsXml(config: DrumKitConfig): string {
       }
       
       samples.push(
-        `      <sample path="${sample.path}"${volumeAttr}${sampleLengthAttr} rootNote="${piece.rootNote}" ` +
+        `      <sample path="${sample.path}"${volumeAttr} rootNote="${piece.rootNote}" ` +
         `loNote="${piece.rootNote}" hiNote="${piece.rootNote}"${velocityAttrs} />`
       );
     }
@@ -155,11 +151,6 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
 Best Practices:
 - IMPORTANT: Always use absolute paths (e.g., 'C:/Users/username/Documents/Samples/kick.wav') rather than relative paths
 - Group all samples for a drum piece (e.g., all kick mics) into a single group to prevent voice conflicts
-- Each sample should have start/end markers only if the samples can be analyzed first and set as below:
-  * Use the analyze_wav_samples tool to get accurate sample lengths:
-    analyze_wav_samples(["C:/Users/username/Documents/Samples/Kick_Close_Soft.wav"]) -> {"sampleLength": 60645}
-    Then we set the end to the INDEX of the last sample, which is the length in samples - 1,
-    So for the above example where {"sampleLength": 60645}, you would use start="0" end="60644" in your sample definition.
 - When using multiple mic positions (e.g., Close, OH, Room), include them all in the same group
 - Use velocity layers within a group to control dynamics
 
@@ -170,20 +161,19 @@ Example Structure:
     "rootNote": 36,
     "samples": [
       // All mic positions for soft velocity
-      {"path": "C:/Users/username/Documents/Samples/Kick_Close_Soft.wav", "start": 0, "end": 60645},  // (Length from analyze_wav_samples - 1)
-      {"path": "C:/Users/username/Documents/Samples/Kick_OH_L_Soft.wav", "start": 0, "end": 60000},
-      {"path": "C:/Users/username/Documents/Samples/Kick_OH_R_Soft.wav", "start": 0, "end": 60000},
+      {"path": "C:/Users/username/Documents/Samples/Kick_Close_Soft.wav"},
+      {"path": "C:/Users/username/Documents/Samples/Kick_OH_L_Soft.wav"},
+      {"path": "C:/Users/username/Documents/Samples/Kick_OH_R_Soft.wav"},
       // All mic positions for medium velocity
-      {"path": "C:/Users/username/Documents/Samples/Kick_Close_Medium.wav", "start": 0, "end": 70162},  (Length from analyze_wav_samples - 1)
+      {"path": "C:/Users/username/Documents/Samples/Kick_Close_Medium.wav"}
       ...
     ]
   }]
 }
 
 Workflow:
-1. First use analyze_wav_samples to get accurate lengths for all your WAV files
-2. Use those lengths to determine the index (i.e. length - 1) and set the end markers in your drum pieces configuration
-3. Pass the complete configuration to generate_drum_groups to create the XML`,
+1. Configure your drum pieces with appropriate paths and settings
+2. Pass the complete configuration to generate_drum_groups to create the XML`,
         inputSchema: {
           type: "object",
           properties: {

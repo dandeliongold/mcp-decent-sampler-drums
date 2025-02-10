@@ -10,10 +10,9 @@ This TypeScript-based MCP server provides tools for working with DecentSampler d
 
 ### Tools
 
-- `analyze_wav_samples` - Analyze WAV files to get accurate sample lengths and metadata
-  - Returns precise sample lengths for setting end markers
-  - Helps prevent looping issues in DecentSampler
+- `analyze_wav_samples` - Analyze WAV files to get metadata and sample information
   - Provides sample rate, channel count, and bit depth information
+  - Useful for understanding sample characteristics
 
 - `generate_drum_groups` - Generate DecentSampler `<groups>` XML for drum kits
   - Flexible velocity handling:
@@ -55,9 +54,7 @@ The `generate_drum_groups` tool accepts a configuration object with the followin
     rootNote: number,            // MIDI note number
     samples: {
       path: string,              // Path to sample file
-      volume?: string,           // Optional per-sample volume
-      start?: number,            // Optional start marker (default: 0)
-      end?: number              // Optional end marker (use analyze_wav_samples to get this)
+      volume?: string           // Optional per-sample volume
     }[],
     muting?: {                   // Optional muting group configuration
       tags: string[],            // Tags for this group
