@@ -18,7 +18,7 @@ interface DrumKitConfig {
     volume?: string,
     ampVelTrack?: number,
     trigger?: string,
-    velocityLayers: {
+    velocityLayers?: {
       low: number,
       high: number,
       name: string
@@ -49,18 +49,24 @@ function generateGroupsXml(config: DrumKitConfig): string {
       : '';
 
     const samples: string[] = [];
-    const velocityLayers = globalSettings.velocityLayers;
-
-    for (let i = 0; i < Math.min(piece.samples.length, velocityLayers.length); i++) {
-      const sample = piece.samples[i];
-      const layer = velocityLayers[i];
+    
+    for (const sample of piece.samples) {
       const volumeAttr = sample.volume ? ` volume="${sample.volume}"` : '';
       // end should be INDEX of last sample, which is length in samples - 1
       const sampleLengthAttr = sample.sampleLength ? ` start="0" end="${sample.sampleLength-1}"` : '';
+      
+      let velocityAttrs = '';
+      if (globalSettings.velocityLayers) {
+        const layerIndex = piece.samples.indexOf(sample);
+        if (layerIndex < globalSettings.velocityLayers.length) {
+          const layer = globalSettings.velocityLayers[layerIndex];
+          velocityAttrs = ` loVel="${layer.low}" hiVel="${layer.high}"`;
+        }
+      }
+      
       samples.push(
         `      <sample path="${sample.path}"${volumeAttr}${sampleLengthAttr} rootNote="${piece.rootNote}" ` +
-        `loNote="${piece.rootNote}" hiNote="${piece.rootNote}" ` +
-        `loVel="${layer.low}" hiVel="${layer.high}" />`
+        `loNote="${piece.rootNote}" hiNote="${piece.rootNote}"${velocityAttrs} />`
       );
     }
 
@@ -203,7 +209,7 @@ Workflow:
                   }
                 }
               },
-              required: ["velocityLayers"]
+              required: []
             },
             drumPieces: {
               type: "array",
@@ -291,12 +297,14 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         const config = obj as Partial<DrumKitConfig>;
         return (
           !!config.globalSettings &&
-          Array.isArray(config.globalSettings.velocityLayers) &&
-          config.globalSettings.velocityLayers.every(layer => 
-            typeof layer.low === 'number' &&
-            typeof layer.high === 'number' &&
-            typeof layer.name === 'string'
-          ) &&
+          (!config.globalSettings.velocityLayers || (
+            Array.isArray(config.globalSettings.velocityLayers) &&
+            config.globalSettings.velocityLayers.every(layer => 
+              typeof layer.low === 'number' &&
+              typeof layer.high === 'number' &&
+              typeof layer.name === 'string'
+            )
+          )) &&
           Array.isArray(config.drumPieces) &&
           config.drumPieces.every(piece => 
             typeof piece.name === 'string' &&
