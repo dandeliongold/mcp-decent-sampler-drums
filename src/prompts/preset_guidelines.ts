@@ -5,6 +5,8 @@ When creating Decent Sampler drum presets, follow these guidelines:
 For complete documentation, visit:
 https://decentsampler-developers-guide.readthedocs.io/en/stable/
 
+IMPORTANT: All Decent Sampler preset files MUST use the .dspreset file extension.
+
 1. Basic Structure:
 <?xml version="1.0" encoding="UTF-8"?>
 <DecentSampler minVersion="1.0.0">
