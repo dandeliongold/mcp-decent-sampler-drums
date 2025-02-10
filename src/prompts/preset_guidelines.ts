@@ -43,7 +43,6 @@ https://decentsampler-developers-guide.readthedocs.io/en/stable/
   * Use silencingMode="fast" for immediate muting (hi-hats)
   * Use silencingMode="normal" for release phase (cymbals)
 - Implement round robins using seqMode="round_robin" or "random"
-- Set ampVelTrack for velocity sensitivity
 
 3. Sample Configuration:
 - Velocity layers are optional:
@@ -98,11 +97,6 @@ https://decentsampler-developers-guide.readthedocs.io/en/stable/
   * memory
   * disk_streaming
   * auto (default)
-- Configure proper trigger modes:
-  * attack: normal note-on trigger
-  * release: for release samples
-  * first: only if no other notes playing
-  * legato: only if other notes are playing
 - Optimize voice usage:
   * Group related samples together
   * Use proper voice muting
@@ -143,7 +137,6 @@ Example with velocity layers:
 Example without velocity layers (simpler configuration):
 {
   "globalSettings": {
-    "volume": "-12dB"  // Optional global settings
   },
   "drumPieces": [{
     "name": "Kick",

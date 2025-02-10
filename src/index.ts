@@ -15,9 +15,6 @@ import { analyzeWavFile } from './wav-analysis.js';
 
 interface DrumKitConfig {
   globalSettings: {
-    volume?: string,
-    ampVelTrack?: number,
-    trigger?: string,
     velocityLayers?: {
       low: number,
       high: number,
@@ -66,13 +63,8 @@ function generateGroupsXml(config: DrumKitConfig): string {
       );
     }
 
-    const volumeAttr = globalSettings.volume ? ` volume="${globalSettings.volume}"` : '';
-    const ampVelTrackAttr = globalSettings.ampVelTrack !== undefined ? ` ampVelTrack="${globalSettings.ampVelTrack}"` : ' ampVelTrack="1"';
-
-    const triggerAttr = globalSettings.trigger ? ` trigger="${globalSettings.trigger}"` : ' trigger="attack"';
-    
     groups.push(
-      `  <group name="${piece.name}"${volumeAttr}${ampVelTrackAttr} tuning="0.0"${triggerAttr}${mutingAttrs}>\n` +
+      `  <group name="${piece.name}" ampVelTrack="1" tuning="0.0"${mutingAttrs}>\n` +
       `${samples.join('\n')}\n` +
       `  </group>`
     );
@@ -180,12 +172,6 @@ Workflow:
             globalSettings: {
               type: "object",
               properties: {
-                volume: { type: "string" },
-                ampVelTrack: { type: "number" },
-                trigger: { 
-                  type: "string",
-                  enum: ["attack", "release", "first", "legato"]
-                },
                 velocityLayers: {
                   type: "array",
                   items: {

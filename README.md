@@ -20,7 +20,7 @@ This TypeScript-based MCP server provides tools for working with DecentSampler d
     * Advanced mode: Multiple velocity layers with configurable ranges
   - Handles sample path mapping and root note assignments
   - Optional muting groups with tags
-  - Configurable global settings (volume, velocity tracking, trigger modes)
+  - Configurable global settings
 
 ### Prompts
 
@@ -40,9 +40,6 @@ The `generate_drum_groups` tool accepts a configuration object with the followin
 ```typescript
 {
   globalSettings: {
-    volume?: string,              // Optional global volume adjustment
-    ampVelTrack?: number,        // Optional velocity tracking (default: 1)
-    trigger?: "attack" | "release" | "first" | "legato", // Optional trigger mode (default: "attack")
     velocityLayers?: {           // Optional velocity layer definitions
       low: number,               // Lower velocity bound
       high: number,              // Upper velocity bound
