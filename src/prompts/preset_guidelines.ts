@@ -60,7 +60,7 @@ IMPORTANT: All Decent Sampler preset files MUST use the .dspreset file extension
   * Hi-hat Closed = 42
   * Hi-hat Open = 46
   * etc.
-- Include all mic positions in the same group, example:
+- Include all mic positions in the same group, for example:
   <group>
     <sample path="Samples/Kick_Close.wav" rootNote="36" />
     <sample path="Samples/Kick_OH_L.wav" rootNote="36" />
@@ -69,18 +69,24 @@ IMPORTANT: All Decent Sampler preset files MUST use the .dspreset file extension
   </group>
 
 4. Multi-mic Setup:
-- Two ways to route audio:
-  1. Direct routing using outputXTarget attributes:
-     <group output1Target="MAIN_OUTPUT" output2Target="AUX_STEREO_OUTPUT_1">
-  2. Bus routing for shared effects:
-     <group output1Target="MAIN_OUTPUT" output2Target="BUS_1">
-- Configure proper output routing:
-  * MAIN_OUTPUT for primary mix
-  * BUS_1 through BUS_16 for effect processing
-  * AUX_STEREO_OUTPUT_1 through 16 for separate mic control
-- Set appropriate volume balancing:
-  * Use output1Volume through output8Volume (0.0-1.0)
-  * Use busVolume for overall bus level
+- You can route multiple mics to separate buses to control or process them individually.
+
+IMPORTANT: **Bus volume control**  
+- Each bus volume must be bound to parameter="BUS_VOLUME", type="amp", level="bus", and use the correct bus index (0-based).
+- If your UI knob uses a dB range (e.g., -96 to 12) but Decent Sampler’s bus volume is linear (0-16), apply linear translation. For example:
+  \`\`\`xml
+  <labeled-knob label="Close Mic" type="float" minValue="-96" maxValue="12" value="0">
+      <binding
+         type="amp"
+         level="bus"
+         position="0" <!-- bus #0 -->
+         parameter="BUS_VOLUME"
+         translation="linear"
+         translationOutputMin="0"
+         translationOutputMax="16" />
+  </labeled-knob>
+  \`\`\`
+- Ensure you route samples to the correct bus outputs (e.g., output1Target="BUS_1") and map each bus to MAIN_OUTPUT or AUX_STEREO_OUTPUT_x as needed.
 
 5. Effects Guidelines:
 When effects are specifically requested, follow these guidelines:
@@ -124,4 +130,5 @@ When effects are specifically requested, follow these guidelines:
 - Optimize voice usage:
   * Group related samples together
   * Use proper voice muting
-  * Consider CPU impact of effects`
+  * Consider CPU impact of effects
+`
