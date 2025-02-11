@@ -67,7 +67,24 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
     tools: [
       {
         name: "configure_drum_controls",
-        description: "Configure global pitch and envelope controls for each drum type.\n\nThis tool will:\n- Add per-drum pitch controls with customizable ranges\n- Configure ADSR envelope settings for natural decay control\n- Generate proper XML structure for global drum controls",
+        description: `Configure global pitch and envelope controls for each drum type.
+
+This tool will:
+- Add per-drum pitch controls with customizable ranges
+- Configure ADSR envelope settings for natural decay control
+- Generate proper XML structure for global drum controls
+
+Error Handling:
+- Validates pitch range values (min/max must be valid numbers)
+- Ensures envelope times are positive values
+- Verifies curve values are within -100 to 100 range
+- Returns detailed error messages for invalid configurations
+
+Success Response:
+Returns XML structure containing:
+- Global controls for each drum type
+- MIDI CC mappings for real-time control
+- Properly formatted parameter bindings`,
         inputSchema: {
           type: "object",
           properties: {
@@ -137,7 +154,24 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
       },
       {
         name: "configure_round_robin",
-        description: "Configure round robin sample playback for a set of samples.\n\nThis tool will:\n- Validate sequence positions\n- Verify sample files exist\n- Generate proper XML structure for round robin playback",
+        description: `Configure round robin sample playback for a set of samples.
+
+This tool will:
+- Validate sequence positions
+- Verify sample files exist
+- Generate proper XML structure for round robin playback
+
+Error Handling:
+- Checks if sample files exist at specified paths
+- Validates sequence positions are unique and sequential
+- Ensures mode is one of: round_robin, random, true_random, always
+- Returns specific error messages for missing files or invalid sequences
+
+Success Response:
+Returns XML structure with:
+- Configured playback mode
+- Sample sequence assignments
+- Proper group organization for round robin playback`,
         inputSchema: {
           type: "object",
           properties: {
@@ -177,7 +211,29 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
       },
       {
         name: "analyze_wav_samples",
-        description: "Analyze WAV files to detect common issues in drum kit samples such as:\n- Non-standard WAV headers that may cause playback issues\n- Metadata inconsistencies that could affect multi-mic setups\n\nIMPORTANT: Always use absolute paths (e.g., 'C:/Users/username/Documents/Samples/kick.wav') rather than relative paths.",
+        description: `Analyze WAV files to detect common issues in drum kit samples.
+
+This tool checks for:
+- Non-standard WAV headers that may cause playback issues
+- Metadata inconsistencies that could affect multi-mic setups
+- Sample rate and bit depth compatibility
+- Channel configuration issues
+- File size and format validation
+
+Error Handling:
+- Reports detailed header format issues
+- Identifies metadata inconsistencies between related samples
+- Flags potential playback compatibility problems
+- Returns specific error messages for each issue type
+
+Success Response:
+Returns detailed analysis including:
+- WAV header information
+- Sample metadata
+- Potential compatibility issues
+- Recommendations for fixes
+
+IMPORTANT: Always use absolute paths (e.g., 'C:/Users/username/Documents/Samples/kick.wav') rather than relative paths.`,
         inputSchema: {
           type: "object",
           properties: {
@@ -192,7 +248,27 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
       },
       {
         name: "configure_mic_routing",
-        description: "Configure multi-mic routing with MIDI controls for drum samples.\n\nThis tool will:\n- Set up individual volume controls for each mic position (close, OH L/R, room L/R)\n- Route each mic to its own auxiliary output for DAW mixing\n- Configure MIDI CC mappings for mic volumes\n- Generate proper XML structure for DecentSampler",
+        description: `Configure multi-mic routing with MIDI controls for drum samples.
+
+This tool will:
+- Set up individual volume controls for each mic position (close, OH L/R, room L/R)
+- Route each mic to its own auxiliary output for DAW mixing
+- Configure MIDI CC mappings for mic volumes
+- Generate proper XML structure for DecentSampler
+
+Error Handling:
+- Validates mic position assignments
+- Checks for duplicate MIDI CC assignments
+- Ensures valid output routing targets
+- Verifies bus indices are unique and valid
+- Returns specific errors for routing conflicts
+
+Success Response:
+Returns XML structure containing:
+- Configured mic bus routing
+- Volume control mappings
+- MIDI CC assignments
+- Complete routing matrix for all samples`,
         inputSchema: {
           type: "object",
           properties: {
@@ -275,12 +351,32 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
       {
         name: "generate_drum_groups",
         description: `Generate DecentSampler <groups> XML for drum kits.
-  
+
+This tool will:
+- Create complete drum kit configurations
+- Handle velocity layers and muting groups
+- Organize samples by drum piece and articulation
+- Generate proper XML structure for all samples
+
 Best Practices:
-- IMPORTANT: Always use absolute paths (e.g., 'C:/Users/username/Documents/Samples/kick.wav') rather than relative paths
-- Group all samples for a drum piece (e.g., all kick mics) into a single group to prevent voice conflicts
-- When using multiple mic positions (e.g., Close, OH, Room), include them all in the same group
+- IMPORTANT: Always use absolute paths (e.g., 'C:/Users/username/Documents/Samples/kick.wav')
+- Group all samples for a drum piece (e.g., all kick mics) into a single group
+- When using multiple mic positions, include them all in the same group
 - Use velocity layers within a group to control dynamics
+
+Error Handling:
+- Validates all sample paths exist
+- Checks for valid MIDI note numbers
+- Ensures velocity layers don't overlap
+- Verifies muting group configurations
+- Returns specific errors for any invalid settings
+
+Success Response:
+Returns complete XML structure with:
+- Organized sample groups
+- Velocity layer mappings
+- Muting group configurations
+- All sample references and settings
 
 Example Structure:
 {
@@ -297,11 +393,7 @@ Example Structure:
       ...
     ]
   }]
-}
-
-Workflow:
-1. Configure your drum pieces with appropriate paths and settings
-2. Pass the complete configuration to generate_drum_groups to create the XML`,
+}`,
         inputSchema: {
           type: "object",
           properties: {

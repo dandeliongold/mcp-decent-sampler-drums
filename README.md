@@ -15,6 +15,24 @@ This TypeScript-based MCP server provides tools for working with DecentSampler d
   - Verifies metadata consistency for multi-mic setups
   - Helpful for troubleshooting potential playback issues before preset creation
 
+- `configure_drum_controls` - Configure global pitch and envelope controls for each drum type
+  - Add per-drum pitch controls with customizable ranges
+  - Configure ADSR envelope settings for natural decay control
+  - Generate proper XML structure for global drum controls
+  - Supports custom curve shapes for attack, decay, and release
+
+- `configure_mic_routing` - Set up multi-mic routing with MIDI controls
+  - Individual volume controls for each mic position (close, OH L/R, room L/R)
+  - Route each mic to its own auxiliary output for DAW mixing
+  - MIDI CC mappings for mic volumes
+  - Flexible bus routing for shared effects processing
+
+- `configure_round_robin` - Configure round robin sample playback
+  - Support for multiple playback modes: round_robin, random, true_random, always
+  - Automatic sequence position validation
+  - Sample file existence verification
+  - Generates proper XML structure for round robin playback
+
 - `generate_drum_groups` - Generate DecentSampler `<groups>` XML for drum kits
   - Flexible velocity handling:
     * Simple mode: Natural velocity response without explicit layers
@@ -51,11 +69,79 @@ To create your own drum kits, you'll first need samples. If you don't already ha
 
 Almost any sound can be used as a drum or percussive instrument.  The goal of this MCP server is to make it easier to set up your own presets, whether you're playing your kitchen utensils into your phone, or recording a full kit in a studio.
 
-## Input Schema
+## Input Schemas
 
-AI assistants should consult the `preset_guidelines` prompt before generating configurations with the schema below. The guidelines contain essential context for creating optimal preset structures.
+AI assistants should consult the `preset_guidelines` prompt before generating configurations with the schemas below. The guidelines contain essential context for creating optimal preset structures.
 
-The `generate_drum_groups` tool accepts a configuration object with the following structure:
+### configure_drum_controls
+
+```typescript
+{
+  drumControls: {
+    [drumName: string]: {
+      pitch?: {
+        default: number,     // Default pitch in semitones (0 = no change)
+        min?: number,        // Optional: Minimum pitch adjustment (e.g. -12)
+        max?: number         // Optional: Maximum pitch adjustment (e.g. +12)
+      },
+      envelope: {
+        attack: number,      // Attack time in seconds
+        decay: number,       // Decay time in seconds
+        sustain: number,     // Sustain level (0-1)
+        release: number,     // Release time in seconds
+        attackCurve?: number,  // Optional: -100 to 100 (-100 = logarithmic)
+        decayCurve?: number,   // Optional: -100 to 100 (100 = exponential)
+        releaseCurve?: number  // Optional: -100 to 100 (100 = exponential)
+      }
+    }
+  }
+}
+```
+
+### configure_mic_routing
+
+```typescript
+{
+  micBuses: [{
+    name: string,           // Display name (e.g., 'Close Mic', 'OH L')
+    outputTarget: string,   // Output routing (e.g., 'AUX_STEREO_OUTPUT_1')
+    volume?: {
+      default: number,      // Default volume in dB
+      min?: number,         // Optional: Minimum volume in dB (e.g., -96)
+      max?: number,         // Optional: Maximum volume in dB (e.g., 12)
+      midiCC?: number      // Optional: MIDI CC number for volume control
+    }
+  }],
+  drumPieces: [{
+    name: string,
+    rootNote: number,
+    samples: [{
+      path: string,
+      micConfig: {
+        position: "close" | "overheadLeft" | "overheadRight" | "roomLeft" | "roomRight",
+        busIndex: number,
+        volume?: number
+      }
+    }]
+  }]
+}
+```
+
+### configure_round_robin
+
+```typescript
+{
+  directory: string,        // Absolute path to samples directory
+  mode: "round_robin" | "random" | "true_random" | "always",
+  length: number,          // Number of round robin variations
+  samples: [{
+    path: string,          // Path to sample (relative to directory)
+    seqPosition: number    // Position in sequence (1 to length)
+  }]
+}
+```
+
+### generate_drum_groups
 
 ```typescript
 {

@@ -5,6 +5,8 @@ When creating Decent Sampler drum presets, follow these guidelines:
 For complete documentation, visit:
 https://decentsampler-developers-guide.readthedocs.io/en/stable/
 
+NOTE: This guide focuses on Decent Sampler concepts and best practices. For implementation details and examples, refer to the MCP tool documentation available in the system.
+
 IMPORTANT: All Decent Sampler preset files MUST use the .dspreset file extension.
 
 1. Basic Structure:
@@ -119,80 +121,4 @@ IMPORTANT: All Decent Sampler preset files MUST use the .dspreset file extension
 - Optimize voice usage:
   * Group related samples together
   * Use proper voice muting
-  * Consider CPU impact of effects
-
-7. Using MCP Tools for Preset Creation:
-
-The analyze_wav_samples tool is available for analyzing WAV files to get metadata and sample information if needed.
-
-Step 1: Structure Your Configuration
-- Organize samples by drum piece
-- Include all mic positions in each configuration
-- Velocity layers are optional depending on your needs:
-
-Example with velocity layers:
-{
-  "globalSettings": {
-    "velocityLayers": [
-      { "low": 1, "high": 54, "name": "soft" },
-      { "low": 55, "high": 94, "name": "medium" }
-    ]
-  },
-  "drumPieces": [{
-    "name": "Kick",
-    "rootNote": 36,
-    "samples": [
-      // Soft velocity, all mics
-      { 
-        "path": "C:/path/to/samples/Kick_Close_Soft.wav"
-      },
-      { 
-        "path": "C:/path/to/samples/Kick_OH_Soft.wav"
-      }
-    ]
-  }]
-}
-
-Example without velocity layers (simpler configuration):
-{
-  "globalSettings": {
-  },
-  "drumPieces": [{
-    "name": "Kick",
-    "rootNote": 36,
-    "samples": [
-      // All mic positions
-      { 
-        "path": "C:/path/to/samples/Kick_Close.wav"
-      },
-      { 
-        "path": "C:/path/to/samples/Kick_OH.wav"
-      }
-    ]
-  }]
-}
-
-Choose your approach based on your needs:
-- Use velocity layers when you have multiple dynamic levels recorded separately
-- Omit velocity layers when:
-  * You have single-dynamic samples that should respond naturally to velocity
-  * You want a simpler configuration
-  * You prefer to control dynamics purely through velocity-to-amplitude tracking
-
-Step 2: Generate Groups
-- Pass your complete configuration to generate_drum_groups
-- Verify the generated XML includes:
-  * Proper velocity layer mapping
-  * Correct mic position organization
-
-8. Troubleshooting Sample Issues:
-
-Before creating your preset, we recommend that you use analyze_wav_samples to verify sample compatibility:
-- Verify WAV headers are properly formatted
-- Ensure metadata is consistent across all samples in your kit
-
-Example workflow:
-1. Analyze all samples for a drum piece:
-   analyze_wav_samples(['kick_close.wav', 'kick_oh.wav', 'kick_room.wav'])
-2. Compare the analysis results to verify consistency
-3. Address any issues before creating the preset`
+  * Consider CPU impact of effects`
