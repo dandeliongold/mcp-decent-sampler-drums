@@ -5,6 +5,8 @@ When creating Decent Sampler drum presets, follow these guidelines:
 For complete documentation, visit:
 https://decentsampler-developers-guide.readthedocs.io/en/stable/
 
+IMPORTANT: Do not add any effects (reverb, delay, etc.) unless explicitly requested. Effects can significantly impact CPU usage and may not be desired in all use cases.
+
 NOTE: This guide focuses on Decent Sampler concepts and best practices. For implementation details and examples, refer to the MCP tool documentation available in the system.
 
 IMPORTANT: All Decent Sampler preset files MUST use the .dspreset file extension.
@@ -81,6 +83,7 @@ IMPORTANT: All Decent Sampler preset files MUST use the .dspreset file extension
   * Use busVolume for overall bus level
 
 5. Effects Guidelines:
+When effects are specifically requested, follow these guidelines:
 - Group-level effects (per-voice processing only):
   * Lowpass filter
   * Hipass filter
