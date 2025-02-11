@@ -6,6 +6,8 @@ This TypeScript-based MCP server provides tools for working with DecentSampler d
 
 <a href="https://glama.ai/mcp/servers/phypkuqwcn"><img width="380" height="200" src="https://glama.ai/mcp/servers/phypkuqwcn/badge" alt="Decent-Sampler Drums Server MCP server" /></a>
 
+**Warning:** Creating complex presets may end up exceeding Claude Desktop's maximum message length.  We are still working on streamlining this tool to work around this limitation.  If you are creating simple presets without a lot of mics or other variations, the xml file should be small enough for Claude to write to a file.
+
 ## Features
 
 ### Tools
