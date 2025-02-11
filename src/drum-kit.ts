@@ -16,18 +16,18 @@ export interface DrumKitConfig {
     drumControls?: {
       [drumName: string]: {
         pitch?: {
-          default: number,  // Default pitch in semitones (0 = no change)
-          min?: number,     // Minimum pitch adjustment (e.g. -12 semitones)
-          max?: number      // Maximum pitch adjustment (e.g. +12 semitones)
+          default: number,  // Pitch adjustment in semitones
+          min?: number,     // Optional minimum pitch adjustment
+          max?: number      // Optional maximum pitch adjustment
         },
         envelope?: {
           attack: number,   // Attack time in seconds
           decay: number,    // Decay time in seconds
           sustain: number,  // Sustain level (0-1)
           release: number,  // Release time in seconds
-          attackCurve?: number,  // -100 to 100, Default: -100 (logarithmic)
-          decayCurve?: number,   // -100 to 100, Default: 100 (exponential)
-          releaseCurve?: number  // -100 to 100, Default: 100 (exponential)
+          attackCurve?: number,  // -100 to 100 (logarithmic to exponential)
+          decayCurve?: number,   // -100 to 100 (logarithmic to exponential)
+          releaseCurve?: number  // -100 to 100 (logarithmic to exponential)
         }
       }
     },

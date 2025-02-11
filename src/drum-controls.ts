@@ -49,6 +49,7 @@ export interface DrumEnvelopeConfig {
 
 export interface DrumConfig {
   name: string;
+  rootNote: number;  // Required instead of defaulting
   pitch?: DrumPitchConfig;
   envelope?: DrumEnvelopeConfig;
 }
@@ -145,8 +146,8 @@ export function configureDrumControls(config: DrumControlsConfig): DrumKitConfig
     },
     drumPieces: config.drums.map(drum => ({
       name: drum.name,
-      rootNote: 60, // Default to middle C
-      samples: [{ path: "test.wav" }] // Placeholder sample
+      rootNote: drum.rootNote,
+      samples: [] // Let caller provide samples
     }))
   };
 }

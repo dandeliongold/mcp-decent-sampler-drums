@@ -6,6 +6,7 @@ describe('Drum Controls Configuration', () => {
     const validConfig: DrumControlsConfig = {
       drums: [{
         name: "Kick",
+        rootNote: 36,  // Standard MIDI note for kick
         pitch: {
           default: 0,
           min: -12,
@@ -19,6 +20,7 @@ describe('Drum Controls Configuration', () => {
     const invalidRange: DrumControlsConfig = {
       drums: [{
         name: "Kick",
+        rootNote: 36,
         pitch: {
           default: 0,
           min: 12,
@@ -34,6 +36,7 @@ describe('Drum Controls Configuration', () => {
     const defaultBelowMin: DrumControlsConfig = {
       drums: [{
         name: "Kick",
+        rootNote: 36,
         pitch: {
           default: -13,
           min: -12,
@@ -49,6 +52,7 @@ describe('Drum Controls Configuration', () => {
     const defaultAboveMax: DrumControlsConfig = {
       drums: [{
         name: "Kick",
+        rootNote: 36,
         pitch: {
           default: 13,
           min: -12,
@@ -66,6 +70,7 @@ describe('Drum Controls Configuration', () => {
     const validConfig: DrumControlsConfig = {
       drums: [{
         name: "Kick",
+        rootNote: 36,
         envelope: {
           attack: 0.001,
           decay: 0.5,
@@ -83,6 +88,7 @@ describe('Drum Controls Configuration', () => {
     const negativeTime: DrumControlsConfig = {
       drums: [{
         name: "Kick",
+        rootNote: 36,
         envelope: {
           attack: -0.001,
           decay: 0.5,
@@ -99,6 +105,7 @@ describe('Drum Controls Configuration', () => {
     const invalidSustain: DrumControlsConfig = {
       drums: [{
         name: "Kick",
+        rootNote: 36,
         envelope: {
           attack: 0.001,
           decay: 0.5,
@@ -115,6 +122,7 @@ describe('Drum Controls Configuration', () => {
     const invalidCurve: DrumControlsConfig = {
       drums: [{
         name: "Kick",
+        rootNote: 36,
         envelope: {
           attack: 0.001,
           decay: 0.5,
@@ -134,6 +142,7 @@ describe('Drum Controls Configuration', () => {
       drums: [
         {
           name: "Kick",
+          rootNote: 36,
           pitch: {
             default: 0,
             min: -12,
@@ -151,6 +160,7 @@ describe('Drum Controls Configuration', () => {
         },
         {
           name: "Snare",
+          rootNote: 38,  // Standard MIDI note for snare
           // Only envelope, no pitch
           envelope: {
             attack: 0.001,
