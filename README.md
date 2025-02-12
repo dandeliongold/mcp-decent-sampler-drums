@@ -45,7 +45,9 @@ This TypeScript-based MCP server provides tools for working with DecentSampler d
 
 ### Prompts
 
-When using this MCP server to generate presets, AI assistants should always reference the `preset_guidelines` prompt to ensure adherence to Decent Sampler best practices.
+When using this MCP server to generate simple presets, you should always reference the `simple_preset_guidelines` prompt.
+
+When using this MCP server to generate more complex presets (including sections such as buses, effects, etc.), you should instead reference the `preset_guidelines` prompt.
 
 ## Resources
 

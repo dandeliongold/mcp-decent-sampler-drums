@@ -11,6 +11,7 @@ import {
   McpError,
 } from "@modelcontextprotocol/sdk/types.js";
 import { PRESET_PROMPT } from "./prompts/preset_guidelines.js";
+import { SIMPLE_PRESET_PROMPT } from "./prompts/simple_preset_guidelines.js";
 import { analyzeWavFile } from './wav-analysis.js';
 import { DrumKitConfig, generateGroupsXml, isDrumKitConfig } from './drum-kit.js';
 import { DrumControlsConfig, configureDrumControls } from './drum-controls.js';
@@ -36,7 +37,10 @@ server.setRequestHandler(ListPromptsRequestSchema, async () => {
     prompts: [
       {
         name: "preset_guidelines",
-        description: "Guidelines for structuring Decent Sampler preset files",
+        description: "Guidelines for structuring complex Decent Sampler preset files including support for buses, round robin, velocity layers, etc.",
+      },{
+        name: "simple_preset_guidelines",
+        description: "Guidelines for structuring simple Decent Sampler preset files.",
       },
     ],
   };
@@ -51,6 +55,18 @@ server.setRequestHandler(GetPromptRequestSchema, async (request) => {
           content: {
             type: "text",
             text: PRESET_PROMPT,
+          },
+        },
+      ],
+    };
+  } else if (request.params.name === "simple_preset_guidelines") {
+    return {
+      messages: [
+        {
+          role: "user",
+          content: {
+            type: "text",
+            text: SIMPLE_PRESET_PROMPT,
           },
         },
       ],
