@@ -1,4 +1,4 @@
-import { DrumKitConfig } from './drum-kit.js';
+import { AdvancedDrumKitConfig } from './advanced-drum-kit.js';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -29,7 +29,7 @@ export interface RoundRobinConfig {
   groups: RoundRobinGroup[];
 }
 
-export function configureRoundRobin(directory: string, config: RoundRobinConfig): DrumKitConfig {
+export function configureRoundRobin(directory: string, config: RoundRobinConfig): AdvancedDrumKitConfig {
   // If mode is not 'always', ensure seqPosition is provided at some level
   if (config.mode !== 'always') {
     for (const group of config.groups) {

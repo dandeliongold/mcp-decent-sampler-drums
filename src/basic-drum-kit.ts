@@ -20,8 +20,18 @@ export function isBasicDrumKitConfig(obj: unknown): obj is BasicDrumKitConfig {
 
   const config = obj as Partial<BasicDrumKitConfig>;
   
-  // Check globalSettings
+  // Check globalSettings and ensure no advanced features
   if (!config.globalSettings || typeof config.globalSettings !== 'object') {
+    return false;
+  }
+
+  // Check for advanced features in globalSettings
+  const globalSettings = config.globalSettings as any;
+  if (
+    globalSettings.drumControls !== undefined ||
+    globalSettings.roundRobin !== undefined ||
+    globalSettings.micBuses !== undefined
+  ) {
     return false;
   }
 
@@ -63,8 +73,19 @@ export function isBasicDrumKitConfig(obj: unknown): obj is BasicDrumKitConfig {
         return false;
       }
 
+      // Check for advanced sample features
+      const sampleObj = sample as any;
+      if (
+        sampleObj.seqPosition !== undefined ||
+        sampleObj.micConfig !== undefined
+      ) {
+        return false;
+      }
+
       return true;
-    })
+    }) &&
+    // Check for advanced drum piece features
+    !(piece as any).muting
   );
 }
 

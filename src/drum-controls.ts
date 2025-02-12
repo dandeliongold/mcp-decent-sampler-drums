@@ -1,4 +1,4 @@
-import { DrumKitConfig } from './drum-kit.js';
+import { AdvancedDrumKitConfig } from './advanced-drum-kit.js';
 
 // Type guards for drum control configurations
 export function isDrumPitchConfig(obj: unknown): obj is DrumPitchConfig {
@@ -126,7 +126,7 @@ function validateEnvelopeSettings(drum: DrumConfig): void {
   validateCurve(env.releaseCurve, 'release');
 }
 
-export function configureDrumControls(config: DrumControlsConfig): DrumKitConfig {
+export function configureDrumControls(config: DrumControlsConfig): AdvancedDrumKitConfig {
   // Validate all drum configurations
   for (const drum of config.drums) {
     validatePitchSettings(drum);

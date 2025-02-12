@@ -13,7 +13,9 @@ import {
 import { PRESET_PROMPT } from "./prompts/preset_guidelines.js";
 import { SIMPLE_PRESET_PROMPT } from "./prompts/simple_preset_guidelines.js";
 import { analyzeWavFile } from './wav-analysis.js';
-import { DrumKitConfig, generateGroupsXml, isDrumKitConfig } from './drum-kit.js';
+import { BasicDrumKitConfig, isBasicDrumKitConfig } from './basic-drum-kit.js';
+import { AdvancedDrumKitConfig, isAdvancedDrumKitConfig } from './advanced-drum-kit.js';
+import { generateGroupsXml } from './xml-generation.js';
 import { DrumControlsConfig, configureDrumControls } from './drum-controls.js';
 import { configureRoundRobin } from './round-robin.js';
 import { MicBusConfig, DrumMicConfig, validateMicRouting } from './mic-routing.js';
@@ -30,7 +32,6 @@ const server = new Server(
     },
   }
 );
-
 
 server.setRequestHandler(ListPromptsRequestSchema, async () => {
   return {
@@ -570,12 +571,12 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           )
         );
 
-        // Create DrumKitConfig with mic routing
-        const config: DrumKitConfig = {
+        // Create AdvancedDrumKitConfig with mic routing
+        const config: AdvancedDrumKitConfig = {
           globalSettings: {
             micBuses: args.micBuses as MicBusConfig[]
           },
-          drumPieces: args.drumPieces as DrumKitConfig['drumPieces']
+          drumPieces: args.drumPieces as AdvancedDrumKitConfig['drumPieces']
         };
 
         // Generate XML with mic routing
@@ -606,22 +607,32 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         );
       }
 
-      if (!isDrumKitConfig(args)) {
-        throw new McpError(
-          ErrorCode.InvalidParams,
-          "Invalid arguments: does not match DrumKitConfig schema"
-        );
+      // Try advanced configuration first
+      if (isAdvancedDrumKitConfig(args)) {
+        const xml = generateGroupsXml(args);
+        return {
+          content: [{
+            type: "text",
+            text: xml
+          }]
+        };
       }
 
-      const config = args;
-      const xml = generateGroupsXml(config);
+      // Fall back to basic configuration
+      if (isBasicDrumKitConfig(args)) {
+        const xml = generateGroupsXml(args);
+        return {
+          content: [{
+            type: "text",
+            text: xml
+          }]
+        };
+      }
 
-      return {
-        content: [{
-          type: "text",
-          text: xml
-        }]
-      };
+      throw new McpError(
+        ErrorCode.InvalidParams,
+        "Invalid arguments: does not match either BasicDrumKitConfig or AdvancedDrumKitConfig schema"
+      );
     }
 
     case "configure_drum_controls": {

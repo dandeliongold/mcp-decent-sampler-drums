@@ -48,13 +48,31 @@ export interface AdvancedDrumKitConfig extends BasicDrumKitConfig {
 
 // Type guard for AdvancedDrumKitConfig
 export function isAdvancedDrumKitConfig(obj: unknown): obj is AdvancedDrumKitConfig {
-  // First, ensure it passes basic drum kit validation
-  if (!isBasicDrumKitConfig(obj)) return false;
+  if (!obj || typeof obj !== 'object') return false;
 
   const config = obj as Partial<AdvancedDrumKitConfig>;
   
-  // Ensure globalSettings exists
-  if (!config.globalSettings) return false;
+  // Validate basic structure
+  if (!config.globalSettings || typeof config.globalSettings !== 'object') {
+    return false;
+  }
+
+  // Validate velocity layers if they exist
+  if (config.globalSettings.velocityLayers !== undefined) {
+    if (!Array.isArray(config.globalSettings.velocityLayers)) {
+      return false;
+    }
+    
+    if (!config.globalSettings.velocityLayers.every(layer => 
+      layer &&
+      typeof layer === 'object' &&
+      typeof layer.low === 'number' &&
+      typeof layer.high === 'number' &&
+      typeof layer.name === 'string'
+    )) {
+      return false;
+    }
+  }
 
   // Validate round robin configuration if present
   if (config.globalSettings.roundRobin) {
