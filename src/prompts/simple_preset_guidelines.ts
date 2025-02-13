@@ -9,35 +9,14 @@ IMPORTANT: Use the generate_drum_groups tool with the basic configuration option
 - Any other advanced features unless explicitly requested
 
 1. Using the generate_drum_groups Tool:
-The recommended way to create simple presets is using the generate_drum_groups tool with a basic configuration. This ensures proper structure and avoids advanced features:
+The recommended way to create simple presets is using the generate_drum_groups tool with a basic configuration. This ensures proper structure and avoids advanced features.
 
-Example configuration:
-{
-  "globalSettings": {
-    // Optional: Configure velocity layers if needed
-    "velocityLayers": [
-      { "low": 0, "high": 63, "name": "soft" },
-      { "high": 127, "low": 64, "name": "hard" }
-    ]
-  },
-  "drumPieces": [
-    {
-      "name": "Kick",
-      "rootNote": 36,
-      "samples": [
-        { "path": "Samples/Kick.wav" }
-        // For velocity layers:
-        // { "path": "Samples/Kick_Soft.wav" }
-        // { "path": "Samples/Kick_Hard.wav" }
-      ]
-    }
-  ]
-}
+The basic configuration requires:
+- Essential fields only: name, rootNote, and sample paths
+- Optional velocity layers through globalSettings if needed
+- No advanced features like round robin, mic routing, or muting groups
 
-The basic configuration:
-- Requires only essential fields: name, rootNote, and sample paths
-- Optionally supports velocity layers through globalSettings
-- Automatically excludes advanced features like round robin, mic routing, and muting groups
+Refer to the generate_drum_groups tool documentation for configuration examples and schema details.
 
 2. Understanding the Generated Structure:
 The tool will generate a properly formatted preset with this basic structure. Note that the UI section should ONLY contain the keyboard element with optional color coding - no other UI controls should be added:
@@ -60,14 +39,14 @@ The tool will generate a properly formatted preset with this basic structure. No
     </groups>
 </DecentSampler>
 
-2. Group Organization and Sample Configuration:
+3. Group Organization and Sample Configuration:
 - Place all samples for a single drum piece (or mic position) in one group to avoid voice conflicts.
 - Use standard MIDI mappings (e.g., Kick = 36, Snare = 38, Hi-hat Closed = 42, etc.).
 - Omit velocity layers if not required. Without explicit velocity ranges, samples will respond uniformly to all velocities.
 
-3. Keep It Simple:
+4. Keep It Simple:
 - Do not add any <buses> or <effects> sections unless you are creating a more advanced preset.
 - Focus on a minimal setup that maps samples to the correct root notes and provides a basic user interface.
 
-This simplified format ensures that presets remain straightforward, reducing potential CPU overhead and avoiding unnecessary complexity. For advanced configurations or when additional processing is needed, refer to the full Decent Sampler documentation.
+This approach ensures presets remain straightforward, reducing potential CPU overhead and avoiding unnecessary complexity. For advanced configurations or when additional processing is needed, refer to the full Decent Sampler documentation.
 `;
