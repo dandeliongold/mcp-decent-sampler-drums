@@ -620,7 +620,8 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
       // Fall back to basic configuration
       if (isBasicDrumKitConfig(args)) {
-        const xml = generateGroupsXml(args);
+        const config: BasicDrumKitConfig = args;
+        const xml = generateGroupsXml(config);
         return {
           content: [{
             type: "text",
