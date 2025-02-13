@@ -2,11 +2,45 @@
 export const SIMPLE_PRESET_PROMPT = `
 When creating simple Decent Sampler drum presets, follow these guidelines:
 
-IMPORTANT: Do not include any extra effects (reverb, delay, etc.) or routing elements (buses, extra effects sections) unless explicitly requested. The goal is to keep the preset lightweight and easy to manage.
+IMPORTANT: Use the generate_drum_groups tool with the basic configuration option to create simple, lightweight presets. Do not include:
+- Any UI controls (knobs, sliders, buttons) - the UI should only contain keyboard colors
+- Any effects (reverb, delay, etc.)
+- Any routing elements (buses, extra effects sections)
+- Any other advanced features unless explicitly requested
 
-1. Basic Structure:
-For simple presets, include only the essential elements: the UI and Groups sections. All preset files must use the .dspreset file extension.
-Example:
+1. Using the generate_drum_groups Tool:
+The recommended way to create simple presets is using the generate_drum_groups tool with a basic configuration. This ensures proper structure and avoids advanced features:
+
+Example configuration:
+{
+  "globalSettings": {
+    // Optional: Configure velocity layers if needed
+    "velocityLayers": [
+      { "low": 0, "high": 63, "name": "soft" },
+      { "high": 127, "low": 64, "name": "hard" }
+    ]
+  },
+  "drumPieces": [
+    {
+      "name": "Kick",
+      "rootNote": 36,
+      "samples": [
+        { "path": "Samples/Kick.wav" }
+        // For velocity layers:
+        // { "path": "Samples/Kick_Soft.wav" }
+        // { "path": "Samples/Kick_Hard.wav" }
+      ]
+    }
+  ]
+}
+
+The basic configuration:
+- Requires only essential fields: name, rootNote, and sample paths
+- Optionally supports velocity layers through globalSettings
+- Automatically excludes advanced features like round robin, mic routing, and muting groups
+
+2. Understanding the Generated Structure:
+The tool will generate a properly formatted preset with this basic structure. Note that the UI section should ONLY contain the keyboard element with optional color coding - no other UI controls should be added:
 <?xml version="1.0" encoding="UTF-8"?>
 <DecentSampler minVersion="1.0.0">
     <ui>
