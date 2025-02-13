@@ -3,7 +3,7 @@ export const SIMPLE_PRESET_PROMPT = `
 When creating simple Decent Sampler drum presets, follow these guidelines:
 
 IMPORTANT: Use the generate_drum_groups tool with the basic configuration option to create simple, lightweight presets. Do not include:
-- Any UI controls (knobs, sliders, buttons) - the UI should only contain keyboard colors
+- Any UI controls (knobs, sliders, buttons) - the UI should only contain keyboard colors.  Only the keys that have samples mapped to them should have colors assigned.
 - Any effects (reverb, delay, etc.)
 - Any routing elements (buses, extra effects sections)
 - Any other advanced features unless explicitly requested
