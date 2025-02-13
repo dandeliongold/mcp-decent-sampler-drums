@@ -369,15 +369,23 @@ Returns XML structure containing:
         name: "generate_drum_groups",
         description: `Generate DecentSampler <groups> XML for drum kits.
 
-This tool will:
-- Create complete drum kit configurations
-- Handle velocity layers and muting groups
-- Organize samples by drum piece and articulation
-- Generate proper XML structure for all samples
+This tool supports two configuration types:
+
+BasicDrumKitConfig:
+- For simple presets with minimal features
+- No UI controls, effects, or routing
+- Only supports basic sample mapping and optional velocity layers
+- Recommended for straightforward drum kits
+
+AdvancedDrumKitConfig:
+- For complex setups combining multiple features
+- Supports UI controls, effects, and routing
+- Integrates with other tools (configure_drum_controls, configure_mic_routing, etc.)
+- Use when you need advanced features like round robin or multi-mic setups
 
 Best Practices:
 - IMPORTANT: Always use absolute paths (e.g., 'C:/Users/username/Documents/Samples/kick.wav')
-- Group all samples for a drum piece (e.g., all kick mics) into a single group
+- Group all samples for a drum piece into a single group
 - When using multiple mic positions, include them all in the same group
 - Use velocity layers within a group to control dynamics
 
@@ -388,29 +396,79 @@ Error Handling:
 - Verifies muting group configurations
 - Returns specific errors for any invalid settings
 
+Example Configurations:
+
+1. Basic Configuration (simple drum kit):
+{
+  "globalSettings": {
+    "velocityLayers": [
+      { "low": 1, "high": 42, "name": "soft" },
+      { "low": 43, "high": 85, "name": "medium" },
+      { "low": 86, "high": 127, "name": "hard" }
+    ]
+  },
+  "drumPieces": [{
+    "name": "Kick",
+    "rootNote": 36,
+    "samples": [
+      {"path": "C:/Samples/Kick_Soft.wav"},
+      {"path": "C:/Samples/Kick_Medium.wav"},
+      {"path": "C:/Samples/Kick_Hard.wav"}
+    ]
+  }]
+}
+
+2. Advanced Configuration (multi-mic kit with controls):
+{
+  "globalSettings": {
+    "velocityLayers": [
+      { "low": 1, "high": 127, "name": "full" }
+    ],
+    "drumControls": {
+      "kick": {
+        "pitch": { "default": 0, "min": -12, "max": 12 },
+        "envelope": {
+          "attack": 0.001,
+          "decay": 0.5,
+          "sustain": 0,
+          "release": 0.1
+        }
+      }
+    },
+    "micBuses": [
+      {
+        "name": "Close Mic",
+        "outputTarget": "MAIN_OUTPUT",
+        "volume": { "default": 0, "midiCC": 20 }
+      }
+    ]
+  },
+  "drumPieces": [{
+    "name": "Kick",
+    "rootNote": 36,
+    "samples": [
+      {
+        "path": "C:/Samples/Kick_Close.wav",
+        "micConfig": {
+          "position": "close",
+          "busIndex": 0
+        }
+      }
+    ],
+    "muting": {
+      "tags": ["kick"],
+      "silencedByTags": []
+    }
+  }]
+}
+
 Success Response:
 Returns complete XML structure with:
 - Organized sample groups
 - Velocity layer mappings
 - Muting group configurations
 - All sample references and settings
-
-Example Structure:
-{
-  "drumPieces": [{
-    "name": "Kick",
-    "rootNote": 36,
-    "samples": [
-      // All mic positions for soft velocity
-      {"path": "C:/Users/username/Documents/Samples/Kick_Close_Soft.wav"},
-      {"path": "C:/Users/username/Documents/Samples/Kick_OH_L_Soft.wav"},
-      {"path": "C:/Users/username/Documents/Samples/Kick_OH_R_Soft.wav"},
-      // All mic positions for medium velocity
-      {"path": "C:/Users/username/Documents/Samples/Kick_Close_Medium.wav"}
-      ...
-    ]
-  }]
-}`,
+- Advanced features when using AdvancedDrumKitConfig`,
         inputSchema: {
           type: "object",
           properties: {
