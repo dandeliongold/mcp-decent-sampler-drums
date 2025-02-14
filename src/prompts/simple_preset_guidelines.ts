@@ -6,14 +6,15 @@ IMPORTANT: Use the generate_drum_groups tool with the basic configuration option
 - Any UI controls (knobs, sliders, buttons) - the UI should only contain keyboard colors.  Only the keys that have samples mapped to them should have colors assigned.
 - Any effects (reverb, delay, etc.)
 - Any routing elements (buses, extra effects sections)
-- Any other advanced features unless explicitly requested, including round robin configuration
+- Any other advanced features unless explicitly requested
 
 1. Using the generate_drum_groups Tool:
 The recommended way to create simple presets is using the generate_drum_groups tool with a basic configuration. This ensures proper structure and avoids advanced features.
 
-The basic configuration only requires:
+The basic configuration requires:
 - Essential fields only: name, rootNote, and sample paths
 - Optional velocity layers through globalSettings if needed
+- No advanced features like round robin, mic routing, or muting groups
 
 Refer to the generate_drum_groups tool documentation for configuration examples and schema details.
 
