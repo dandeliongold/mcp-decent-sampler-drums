@@ -74,7 +74,7 @@ If you don't already have samples ready to go, here are some resources to get st
 
 - **Archive.org:** [Sample Pack Collection](https://archive.org/search?query=subject%3A%22Sample+Pack%22+drums&sort=-downloads) - Community-contributed drum samples, sorted by popularity.  Includes some cool stuff like vintage drum machines and CMI Fairlight samples.
 
-- **Sample Pack Nation:** [Oberheim DMX/DX Drumkits](https://samplepacknation.bandcamp.com/album/oberheim-dmx-dx-drumkits-50-sounds) - 50 classic drum machine sounds (Under 10 USD/EUR)
+- **Sample Pack Nation:** [Oberheim DMX/DX Drumkits](https://samplepacknation.bandcamp.com/album/oberheim-dmx-dx-drumkits-50-sounds) - Classic drum machine sounds (Under 10 USD/EUR)
 
 ## Input Schemas
 
