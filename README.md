@@ -62,9 +62,19 @@ Decent Sampler is a FREE sampling plugin that allows you to play samples in the 
 
 ### Sample Sources
 
-To create your own drum kits, you'll first need samples. If you don't already have samples ready to go and want to start experimenting, you can start by exploring [FreeSound.org](https://freesound.org/) which is a collaborative database of creative-commons licensed sounds.  
+The goal of this MCP server is to make it easier to set up your own presets, whether you're playing your kitchen utensils into your phone, or recording a full kit in a studio. To create your own drum kits, you'll also need samples.
 
-Almost any sound can be used as a drum or percussive instrument.  The goal of this MCP server is to make it easier to set up your own presets, whether you're playing your kitchen utensils into your phone, or recording a full kit in a studio.
+If you don't already have samples ready to go, here are some resources to get started:
+
+#### Free and Low-Cost Sample Resources
+
+- **99sounds.org**
+  - [Drum Samples Collection](https://99sounds.org/drum-samples/) - Various drum kits and percussion samples
+  - [Dub & Reggae Sounds](https://99sounds.org/dub-reggae-sounds/) - Specialized collection of reggae drum sounds
+
+- **Archive.org:** [Sample Pack Collection](https://archive.org/search?query=subject%3A%22Sample+Pack%22+drums&sort=-downloads) - Community-contributed drum samples, sorted by popularity.  Includes some cool stuff like vintage drum machines and CMI Fairlight samples.
+
+- **Sample Pack Nation:** [Oberheim DMX/DX Drumkits](https://samplepacknation.bandcamp.com/album/oberheim-dmx-dx-drumkits-50-sounds) - 50 classic drum machine sounds (Under 10 USD/EUR)
 
 ## Input Schemas
 
