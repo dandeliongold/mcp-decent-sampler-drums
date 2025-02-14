@@ -2,7 +2,7 @@
 
 This document provides detailed workflow examples for using the decent-sampler-drums MCP server tools to create and configure drum sample presets.
 
-## Basic Workflow Example
+## Workflow Example
 
 ```mermaid
 graph TB
@@ -11,13 +11,24 @@ graph TB
     
     subgraph "Claude Desktop Interface"
         AttachPrompt --> Decision{Basic or Advanced?}
-        Decision --> |Basic Mode| BasicAnalysis[If asked or inferred,<br/>analyze the sample WAV<br/>files to detect any issues]
-        Decision --> |Advanced Mode| RoundRobin[If round robin is detected,<br/>generate round robin<br/>settings]
-        RoundRobin --> Controls[If pitch/envelope controls<br/>are needed, generate<br/>drum controls]
-        Controls --> MicRouting[If mic routing, volume,<br/>etc. settings are needed,<br/>generate mic settings]
+        
+        subgraph "Optional Tools & Features"
+            direction TB
+            Analysis[WAV Analysis Tool<br/>Check for sample issues]
+            RoundRobin[Round Robin Tool<br/>Configure playback variations]
+            Controls[Drum Controls Tool<br/>Set pitch & envelope]
+            MicRouting[Mic Routing Tool<br/>Configure outputs & volumes]
+        end
+        
+        Decision --> |Available Tools| Analysis
+        Decision --> |Available Tools| RoundRobin
+        Decision --> |Available Tools| Controls
+        Decision --> |Available Tools| MicRouting
     end
     
-    BasicAnalysis --> GenerateGroups[Generate groups<br/>including all the optional<br/>settings]
+    Analysis --> GenerateGroups[Generate groups<br/>including configured settings]
+    RoundRobin --> GenerateGroups
+    Controls --> GenerateGroups
     MicRouting --> GenerateGroups
     
     GenerateGroups --> UpdatePreset[Either update existing<br/>preset file or write new<br/>preset file]
@@ -28,37 +39,53 @@ graph TB
     style PresetFile fill:#fff,stroke:#333
     style TestFile fill:#dfd
     style Decision fill:#f8f8f8,stroke:#333
+    
+    %% Note about tool flexibility
+    classDef note fill:#fff,stroke:#333,stroke-dasharray: 5 5
+    Note[These tools can be used in any order<br/>as needed for your preset]
+    class Note note
+    Note --> Analysis
+    Note --> RoundRobin
+    Note --> Controls
+    Note --> MicRouting
 ```
 
 ### Basic Workflow Steps
 
 1. **Sample Preparation**
-   - Create drum samples
+   - Create drum samples following naming conventions
    - Organize samples in a dedicated directory
 
 2. **Initial Setup**
-   - Choose between Basic and Advanced mode based on requirements
-   - Basic mode: Simple sample mapping with minimal configuration
-   - Advanced mode: Access to extended features
+   - Start a conversation with Claude
+   - Attach your sample files or provide their location
 
-3. **Sample Analysis (Optional)**
-   ```typescript
-   // Example WAV analysis
-   {
-     "paths": [
-       "C:/Samples/kick/kick_close.wav",
-       "C:/Samples/kick/kick_oh.wav"
-     ]
-   }
-   ```
+3. **Available Tools**
+   Each of these tools can be used as needed, in any order:
+   
+   - **WAV Analysis Tool**
+     - Check sample compatibility
+     - Validate formats and metadata
+     - Identify potential issues
 
-4. **Group Generation**
-   - Configure sample mappings
-   - Set up velocity layers if needed
-   - Generate XML structure
+   - **Round Robin Tool**
+     - Configure playback variations
+     - Set up sequential or random playback
+     - Manage multiple sample variations
 
-5. **Preset Creation**
-   - Write new preset file or update existing
+   - **Drum Controls Tool**
+     - Add pitch adjustment controls
+     - Configure ADSR envelopes
+     - Set up control ranges
+
+   - **Mic Routing Tool**
+     - Configure multiple mic positions
+     - Set up output routing
+     - Add volume controls
+
+4. **Preset Generation**
+   - Generate groups with your configured settings
+   - Create or update the .dspreset file
    - Test in Decent Sampler
 
 ## Advanced Workflow
@@ -87,51 +114,3 @@ graph TB
     style Start fill:#f9f,stroke:#333
     style Done fill:#dfd,stroke:#333
 ```
-
-### Advanced Configuration Examples
-
-1. **Round Robin Setup**
-   ```typescript
-   {
-     "directory": "C:/Samples/snare",
-     "mode": "round_robin",
-     "length": 3,
-     "samples": [
-       {
-         "path": "snare_hit_1.wav",
-         "seqPosition": 1
-       },
-       {
-         "path": "snare_hit_2.wav",
-         "seqPosition": 2
-       },
-       {
-         "path": "snare_hit_3.wav",
-         "seqPosition": 3
-       }
-     ]
-   }
-   ```
-
-2. **Drum Controls Configuration**
-   ```typescript
-   {
-     "drumControls": {
-       "snare": {
-         "pitch": {
-           "default": 0,
-           "min": -12,
-           "max": 12
-         },
-         "envelope": {
-           "attack": 0.001,
-           "decay": 0.5,
-           "sustain": 0,
-           "release": 0.1,
-           "attackCurve": -100,
-           "decayCurve": 100
-         }
-       }
-     }
-   }
-   ```
