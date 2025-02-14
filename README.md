@@ -20,6 +20,7 @@ This TypeScript-based MCP server provides tools for working with DecentSampler d
 
 ## Documentation
 
+- [How do I use these tools?](docs/workflows.md) - Step-by-step workflows with real examples
 - [Tools Documentation](docs/tools.md) - Detailed information about each available tool
 - [Input Schemas](docs/schemas.md) - TypeScript interfaces and parameter descriptions
 

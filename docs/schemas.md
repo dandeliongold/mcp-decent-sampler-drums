@@ -2,6 +2,8 @@
 
 This document details the TypeScript interfaces and parameter descriptions for all tool configurations.
 
+See the [Workflows Documentation](workflows.md) for practical examples of how these schemas are used.
+
 ## configure_drum_controls
 
 Configuration schema for drum control parameters including pitch and envelope settings.

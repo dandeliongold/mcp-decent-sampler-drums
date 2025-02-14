@@ -2,6 +2,8 @@
 
 This document provides detailed information about each tool available in the decent-sampler-drums MCP server.
 
+See the [Workflows Documentation](workflows.md) for real-world examples of how these tools work together.
+
 ## analyze_wav_samples
 
 Analyzes WAV files to detect common issues in drum kit samples.
