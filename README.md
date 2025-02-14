@@ -47,7 +47,7 @@ This TypeScript-based MCP server provides tools for working with DecentSampler d
 
 When using this MCP server to generate simple presets, you should always reference the `simple_preset_guidelines` prompt.
 
-When using this MCP server to generate more complex presets (including sections such as buses, effects, etc.), you should instead reference the `preset_guidelines` prompt.
+When using this MCP server to generate more complex presets (including sections such as buses, effects, etc.), you should instead reference the `advanced_preset_guidelines` prompt.  Note that creating complex presets with a large number of samples can still be unstable and may end up exceeding Claude Desktop's maximum message length.
 
 ## Resources
 
@@ -68,7 +68,7 @@ Almost any sound can be used as a drum or percussive instrument.  The goal of th
 
 ## Input Schemas
 
-AI assistants should consult the `preset_guidelines` prompt before generating configurations with the schemas below. The guidelines contain essential context for creating optimal preset structures.
+We recommend referencing either the `simple_preset_guidelines` prompt or the `advanced_preset_guidelines` prompt when generating configurations using the schemas below. These prompts will help ensure you are making the best use of these parameter structures.
 
 ### configure_drum_controls
 
