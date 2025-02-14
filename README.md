@@ -6,52 +6,78 @@ This TypeScript-based MCP server provides tools for working with DecentSampler d
 
 <a href="https://glama.ai/mcp/servers/phypkuqwcn"><img width="380" height="200" src="https://glama.ai/mcp/servers/phypkuqwcn/badge" alt="Decent-Sampler Drums Server MCP server" /></a>
 
-**Warning:** Creating complex presets may end up exceeding Claude Desktop's maximum message length.  We are still working on streamlining this tool to work around this limitation.  If you are creating simple presets without a lot of mics or other variations, the xml file should be small enough for Claude to write to a file.
+**Warning:** Creating complex presets may end up exceeding Claude Desktop's maximum message length. We are still working on streamlining this tool to work around this limitation. If you are creating simple presets without a lot of mics or other variations, the xml file should be small enough for Claude to write to a file.
 
 ## Features
 
-### Tools
+- [WAV file analysis and validation](docs/tools.md#analyze_wav_samples)
+- [Global pitch and envelope controls](docs/tools.md#configure_drum_controls)
+- [Multi-mic routing with MIDI controls](docs/tools.md#configure_mic_routing)
+- [Round robin sample playback](docs/tools.md#configure_round_robin)
+- [Flexible velocity layer handling](docs/schemas.md#generate_drum_groups)
+- [Muting group support](docs/schemas.md#generate_drum_groups)
+- [Auxiliary output routing](docs/tools.md#configure_mic_routing)
 
-- `analyze_wav_samples` - Analyze WAV files to validate drum kit samples
-  - Validates WAV header formatting
-  - Verifies metadata consistency for multi-mic setups
-  - Helpful for troubleshooting potential playback issues before preset creation
+## Documentation
 
-- `configure_drum_controls` - Configure global pitch and envelope controls for each drum type
-  - Add per-drum pitch controls with customizable ranges
-  - Configure ADSR envelope settings for natural decay control
-  - Generate proper XML structure for global drum controls
-  - Supports custom curve shapes for attack, decay, and release
+- [Tools Documentation](docs/tools.md) - Detailed information about each available tool
+- [Input Schemas](docs/schemas.md) - TypeScript interfaces and parameter descriptions
 
-- `configure_mic_routing` - Set up multi-mic routing with MIDI controls
-  - Individual volume controls for each mic position (close, OH L/R, room L/R)
-  - Route each mic to its own auxiliary output for DAW mixing
-  - MIDI CC mappings for mic volumes
-  - Flexible bus routing for shared effects processing
+## Installation
 
-- `configure_round_robin` - Configure round robin sample playback
-  - Support for multiple playback modes: round_robin, random, true_random, always
-  - Automatic sequence position validation
-  - Sample file existence verification
-  - Generates proper XML structure for round robin playback
+### Prerequisites
+- Node.js (v14 or higher)
+- npm (usually comes with Node.js)
+- Claude Desktop app (for use with Claude)
 
-- `generate_drum_groups` - Generate DecentSampler `<groups>` XML for drum kits
-  - Flexible velocity handling:
-    * Simple mode: Natural velocity response without explicit layers
-    * Advanced mode: Multiple velocity layers with configurable ranges
-  - Handles sample path mapping and root note assignments
-  - Optional muting groups with tags
-  - Configurable global settings
+### Setup
 
-### Prompts
+1. Install dependencies:
+```bash
+npm install
+```
+
+2. Build the server:
+```bash
+npm run build
+```
+
+3. Add to your Claude Desktop config:
+
+**Windows:** `%APPDATA%/Claude/claude_desktop_config.json`
+**MacOS:** `~/Library/Application Support/Claude/claude_desktop_config.json`
+
+```json
+{
+  "mcpServers": {
+    "decent-sampler-drums": {
+      "command": "/path/to/decent-sampler-drums/build/index.js"
+    }
+  }
+}
+```
+
+Replace `/path/to/decent-sampler-drums` with the actual path to your installation.
+
+## Development
+
+For development with auto-rebuild:
+```bash
+npm run watch
+```
+
+For debugging, use the MCP Inspector:
+```bash
+npm run inspector
+```
+
+## Usage Guidelines
 
 When using this MCP server to generate simple presets, you should always reference the `simple_preset_guidelines` prompt.
 
-When using this MCP server to generate more complex presets (including sections such as buses, effects, etc.), you should instead reference the `advanced_preset_guidelines` prompt.  Note that creating complex presets with a large number of samples can still be unstable and may end up exceeding Claude Desktop's maximum message length.
+For more complex presets (including sections such as buses, effects, etc.), reference the `advanced_preset_guidelines` prompt. Note that creating complex presets with a large number of samples can still be unstable and may exceed Claude Desktop's maximum message length.
 
-## Resources
-
-### About Decent Sampler
+## About Decent Sampler
 
 Decent Sampler is a FREE sampling plugin that allows you to play samples in the Decent Sampler format.
 
@@ -72,148 +98,6 @@ If you don't already have samples ready to go, here are some resources to get st
   - [Drum Samples Collection](https://99sounds.org/drum-samples/) - Various drum kits and percussion samples
   - [Dub & Reggae Sounds](https://99sounds.org/dub-reggae-sounds/) - Specialized collection of reggae drum sounds
 
-- **Archive.org:** [Sample Pack Collection](https://archive.org/search?query=subject%3A%22Sample+Pack%22+drums&sort=-downloads) - Community-contributed drum samples, sorted by popularity.  Includes some cool stuff like vintage drum machines and CMI Fairlight samples.
+- **Archive.org:** [Sample Pack Collection](https://archive.org/search?query=subject%3A%22Sample+Pack%22+drums&sort=-downloads) - Community-contributed drum samples, sorted by popularity. Includes some cool stuff like vintage drum machines and CMI Fairlight samples.
 
 - **Sample Pack Nation:** [Oberheim DMX/DX Drumkits](https://samplepacknation.bandcamp.com/album/oberheim-dmx-dx-drumkits-50-sounds) - Classic drum machine sounds (Under 10 USD/EUR)
-
-## Input Schemas
-
-We recommend referencing either the `simple_preset_guidelines` prompt or the `advanced_preset_guidelines` prompt when generating configurations using the schemas below. These prompts will help ensure you are making the best use of these parameter structures.
-
-### configure_drum_controls
-
-```typescript
-{
-  drumControls: {
-    [drumName: string]: {
-      pitch?: {
-        default: number,     // Default pitch in semitones (0 = no change)
-        min?: number,        // Optional: Minimum pitch adjustment (e.g. -12)
-        max?: number         // Optional: Maximum pitch adjustment (e.g. +12)
-      },
-      envelope: {
-        attack: number,      // Attack time in seconds
-        decay: number,       // Decay time in seconds
-        sustain: number,     // Sustain level (0-1)
-        release: number,     // Release time in seconds
-        attackCurve?: number,  // Optional: -100 to 100 (-100 = logarithmic)
-        decayCurve?: number,   // Optional: -100 to 100 (100 = exponential)
-        releaseCurve?: number  // Optional: -100 to 100 (100 = exponential)
-      }
-    }
-  }
-}
-```
-
-### configure_mic_routing
-
-```typescript
-{
-  micBuses: [{
-    name: string,           // Display name (e.g., 'Close Mic', 'OH L')
-    outputTarget: string,   // Output routing (e.g., 'AUX_STEREO_OUTPUT_1')
-    volume?: {
-      default: number,      // Default volume in dB
-      min?: number,         // Optional: Minimum volume in dB (e.g., -96)
-      max?: number,         // Optional: Maximum volume in dB (e.g., 12)
-      midiCC?: number      // Optional: MIDI CC number for volume control
-    }
-  }],
-  drumPieces: [{
-    name: string,
-    rootNote: number,
-    samples: [{
-      path: string,
-      micConfig: {
-        position: "close" | "overheadLeft" | "overheadRight" | "roomLeft" | "roomRight",
-        busIndex: number,
-        volume?: number
-      }
-    }]
-  }]
-}
-```
-
-### configure_round_robin
-
-```typescript
-{
-  directory: string,        // Absolute path to samples directory
-  mode: "round_robin" | "random" | "true_random" | "always",
-  length: number,          // Number of round robin variations
-  samples: [{
-    path: string,          // Path to sample (relative to directory)
-    seqPosition: number    // Position in sequence (1 to length)
-  }]
-}
-```
-
-### generate_drum_groups
-
-```typescript
-{
-  globalSettings: {
-    velocityLayers?: {           // Optional velocity layer definitions
-      low: number,               // Lower velocity bound
-      high: number,              // Upper velocity bound
-      name: string               // Layer identifier
-    }[]                         // Omit for natural velocity response
-  },
-  drumPieces: {
-    name: string,                // Name of the drum piece
-    rootNote: number,            // MIDI note number
-    samples: {
-      path: string,              // Path to sample file
-      volume?: string           // Optional per-sample volume
-    }[],
-    muting?: {                   // Optional muting group configuration
-      tags: string[],            // Tags for this group
-      silencedByTags: string[]   // Tags that silence this group
-    }
-  }[]
-}
-```
-
-## Development
-
-Install dependencies:
-```bash
-npm install
-```
-
-Build the server:
-```bash
-npm run build
-```
-
-For development with auto-rebuild:
-```bash
-npm run watch
-```
-
-## Installation
-
-To use with Claude Desktop, add the server config:
-
-On Windows: `%APPDATA%/Claude/claude_desktop_config.json`
-On MacOS: `~/Library/Application Support/Claude/claude_desktop_config.json`
-
-```json
-{
-  "mcpServers": {
-    "decent-sampler-drums": {
-      "command": "/path/to/decent-sampler-drums/build/index.js"
-    }
-  }
-}
-```
-
-### Debugging
-
-Since MCP servers communicate over stdio, debugging can be challenging. We recommend using the [MCP Inspector](https://github.com/modelcontextprotocol/inspector), which is available as a package script:
-
-```bash
-npm run inspector
-```
-
-The Inspector will provide a URL to access debugging tools in your browser.
