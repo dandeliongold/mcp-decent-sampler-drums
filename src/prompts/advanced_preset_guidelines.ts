@@ -1,5 +1,5 @@
 // @ts-nocheck
-export const PRESET_PROMPT = `
+export const ADVANCED_PRESET_PROMPT = `
 When creating Decent Sampler drum presets, follow these guidelines:
 
 For complete documentation, visit:

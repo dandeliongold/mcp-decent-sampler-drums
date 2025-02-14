@@ -10,7 +10,7 @@ import {
   ErrorCode,
   McpError,
 } from "@modelcontextprotocol/sdk/types.js";
-import { PRESET_PROMPT } from "./prompts/preset_guidelines.js";
+import { ADVANCED_PRESET_PROMPT } from "./prompts/advanced_preset_guidelines.js";
 import { SIMPLE_PRESET_PROMPT } from "./prompts/simple_preset_guidelines.js";
 import { analyzeWavFile } from './wav-analysis.js';
 import { BasicDrumKitConfig, isBasicDrumKitConfig } from './basic-drum-kit.js';
@@ -37,7 +37,7 @@ server.setRequestHandler(ListPromptsRequestSchema, async () => {
   return {
     prompts: [
       {
-        name: "preset_guidelines",
+        name: "advanced_preset_guidelines",
         description: "Guidelines for structuring complex Decent Sampler preset files including support for buses, round robin, velocity layers, etc.",
       },{
         name: "simple_preset_guidelines",
@@ -48,14 +48,14 @@ server.setRequestHandler(ListPromptsRequestSchema, async () => {
 });
 
 server.setRequestHandler(GetPromptRequestSchema, async (request) => {
-  if (request.params.name === "preset_guidelines") {
+  if (request.params.name === "advanced_preset_guidelines") {
     return {
       messages: [
         {
           role: "user",
           content: {
             type: "text",
-            text: PRESET_PROMPT,
+            text: ADVANCED_PRESET_PROMPT,
           },
         },
       ],
