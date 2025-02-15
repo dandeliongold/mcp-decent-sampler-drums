@@ -8,21 +8,17 @@ This document provides detailed workflow examples for using the decent-sampler-d
 graph TB
     Start[Start here] --> CreateSamples[Create and name samples<br/>according to convention]
     CreateSamples --> AttachPrompt[Attach either basic or advanced<br/>prompt to the chat]
+    AttachPrompt --> Decision{Basic or Advanced?}
     
-    subgraph "Claude Desktop Interface"
-        AttachPrompt --> Decision{Basic or Advanced?}
-        
-        subgraph "Optional Tools & Features"
-            direction TB
-            Analysis[WAV Analysis Tool<br/>Check for sample issues]
-            RoundRobin[Round Robin Tool<br/>Configure playback variations]
-            Controls[Drum Controls Tool<br/>Set pitch & envelope]
-            MicRouting[Mic Routing Tool<br/>Configure outputs & volumes]
-        end
-        
-        Decision --> Tools["Optional Tools & Features"]
+    subgraph "Optional Tools & Features"
+        direction TB
+        Analysis[WAV Analysis Tool<br/>Check for sample issues]
+        RoundRobin[Round Robin Tool<br/>Configure playback variations]
+        Controls[Drum Controls Tool<br/>Set pitch & envelope]
+        MicRouting[Mic Routing Tool<br/>Configure outputs & volumes]
     end
     
+    Decision --> Tools["Optional Tools & Features"]
     Tools --> GenerateGroups[Generate groups<br/>including configured settings]
     
     GenerateGroups --> UpdatePreset[Either update existing<br/>preset file or write new<br/>preset file]
