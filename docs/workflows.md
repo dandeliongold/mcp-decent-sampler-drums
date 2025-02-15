@@ -20,16 +20,10 @@ graph TB
             MicRouting[Mic Routing Tool<br/>Configure outputs & volumes]
         end
         
-        Decision --> |Available Tools| Analysis
-        Decision --> |Available Tools| RoundRobin
-        Decision --> |Available Tools| Controls
-        Decision --> |Available Tools| MicRouting
+        Decision --> Tools["Optional Tools & Features"]
     end
     
-    Analysis --> GenerateGroups[Generate groups<br/>including configured settings]
-    RoundRobin --> GenerateGroups
-    Controls --> GenerateGroups
-    MicRouting --> GenerateGroups
+    Tools --> GenerateGroups[Generate groups<br/>including configured settings]
     
     GenerateGroups --> UpdatePreset[Either update existing<br/>preset file or write new<br/>preset file]
     UpdatePreset --> PresetFile[.dspreset file]
@@ -39,15 +33,6 @@ graph TB
     style PresetFile fill:#fff,stroke:#333
     style TestFile fill:#dfd
     style Decision fill:#f8f8f8,stroke:#333
-    
-    %% Note about tool flexibility
-    classDef note fill:#fff,stroke:#333,stroke-dasharray: 5 5
-    Note[These tools can be used in any order<br/>as needed for your preset]
-    class Note note
-    Note --> Analysis
-    Note --> RoundRobin
-    Note --> Controls
-    Note --> MicRouting
 ```
 
 ### Basic Workflow Steps
@@ -86,31 +71,4 @@ graph TB
 4. **Preset Generation**
    - Generate groups with your configured settings
    - Create or update the .dspreset file
-   - Test in Decent Sampler
-
-## Advanced Workflow
-
-```mermaid
-graph TB
-    Start[Start here] --> PrepSamples[Prepare multi-mic<br/>drum samples]
-    
-    subgraph "Sample Analysis"
-        PrepSamples --> Analyze[Analyze WAV files<br/>for compatibility]
-        Analyze --> |Issues Found| FixIssues[Fix sample issues]
-        Analyze --> |No Issues| ConfigureRR[Configure round<br/>robin groups]
-    end
-    
-    subgraph "Advanced Configuration"
-        ConfigureRR --> ConfigControls[Configure drum controls<br/>pitch & envelope]
-        ConfigControls --> ConfigMic[Configure mic routing<br/>& volumes]
-        ConfigMic --> GenGroups[Generate drum groups<br/>with all settings]
-    end
-    
-    GenGroups --> CreatePreset[Create .dspreset file]
-    CreatePreset --> Test[Test in Decent Sampler]
-    Test --> |Issues| Analyze
-    Test --> |Success| Done[Complete]
-    
-    style Start fill:#f9f,stroke:#333
-    style Done fill:#dfd,stroke:#333
-```
+   - Test in Decent Sampler by double clicking to open or using the preset browser in the app.
