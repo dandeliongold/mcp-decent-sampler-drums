@@ -9,6 +9,7 @@ graph TB
     Start[Start here] --> CreateSamples[Create and name samples<br/>according to convention]
     CreateSamples --> AttachPrompt[Attach either basic or advanced<br/>prompt to the chat]
     AttachPrompt --> Decision{Basic or Advanced?}
+    Decision --> Tools["Optional Tools & Features"]
     
     subgraph "Optional Tools & Features"
         direction TB
@@ -18,9 +19,7 @@ graph TB
         MicRouting[Mic Routing Tool<br/>Configure outputs & volumes]
     end
     
-    Decision --> Tools["Optional Tools & Features"]
     Tools --> GenerateGroups[Generate groups<br/>including configured settings]
-    
     GenerateGroups --> UpdatePreset[Either update existing<br/>preset file or write new<br/>preset file]
     UpdatePreset --> PresetFile[.dspreset file]
     PresetFile --> TestFile[Open and test file in<br/>Decent Sampler]
