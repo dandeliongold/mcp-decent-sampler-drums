@@ -52,7 +52,12 @@ npm run build
 {
   "mcpServers": {
     "decent-sampler-drums": {
-      "command": "/path/to/decent-sampler-drums/build/index.js"
+      "command": "npx",
+      "args": [
+        "-y",
+        "@dandeliongold/mcp-decent-sampler-drums"
+      ],
+      "env": {}
     }
   }
 }

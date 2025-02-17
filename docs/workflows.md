@@ -67,3 +67,4 @@ graph TB
    - Generate groups with your configured settings
    - Create or update the .dspreset file
    - Test in Decent Sampler by double clicking to open or using the preset browser in the app.
+   - Test in Decent Sampler by double clicking to open or using the preset browser in the app.
