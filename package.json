@@ -7,6 +7,9 @@
     "type": "git",
     "url": "git+https://github.com/dandeliongold/mcp-decent-sampler-drums.git"
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "license": "MIT",
   "bin": {
     "decent-sampler-drums": "./build/index.js"
