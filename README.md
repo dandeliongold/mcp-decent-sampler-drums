@@ -63,8 +63,6 @@ npm run build
 }
 ```
 
-Replace `/path/to/decent-sampler-drums` with the actual path to your installation.
-
 ## Development
 
 For development with auto-rebuild:
