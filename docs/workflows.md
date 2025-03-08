@@ -7,8 +7,9 @@ This document provides detailed workflow examples for using the decent-sampler-d
 ```mermaid
 graph TB
     Start[Start here] --> CreateSamples[Create and name samples<br/>according to convention]
-    CreateSamples --> AttachPrompt[Attach either basic or advanced<br/>prompt to the chat]
-    AttachPrompt --> Decision{Basic or Advanced?}
+    CreateSamples --> SelectPrompt[Select either basic or advanced<br/>preset guidelines prompt]
+    SelectPrompt --> ProvidePath[Provide absolute path to<br/>samples directory]
+    ProvidePath --> Decision{Basic or Advanced?}
     Decision --> Tools["Optional Tools & Features"]
     
     subgraph "Optional Tools & Features"
@@ -38,7 +39,8 @@ graph TB
 
 2. **Initial Setup**
    - Start a conversation with Claude
-   - Attach your sample files or provide their location
+   - Select either the simple or advanced preset guidelines prompt
+   - Provide the absolute path to your samples directory when prompted
 
 3. **Available Tools**
    Each of these tools can be used as needed, in any order:

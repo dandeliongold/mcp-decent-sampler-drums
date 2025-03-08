@@ -81,6 +81,8 @@ When using this MCP server to generate simple presets, you should always referen
 
 For more complex presets (including sections such as buses, effects, etc.), reference the `advanced_preset_guidelines` prompt. Note that creating complex presets with a large number of samples can still be unstable and may exceed Claude Desktop's maximum message length.
 
+Both prompts will ask you to provide a samplesDirectory argument - this should be the absolute path to your drum samples folder (e.g., "C:/Users/username/Documents/DrumSamples"). The prompt will then automatically use this directory in all examples and configurations, making it easier to follow along with the correct paths for your system.
+
 ## About Decent Sampler
 
 Decent Sampler is a FREE sampling plugin that allows you to play samples in the Decent Sampler format.
