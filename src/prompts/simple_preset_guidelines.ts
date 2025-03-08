@@ -1,6 +1,6 @@
 // @ts-nocheck
 export const SIMPLE_PRESET_PROMPT = `
-Let's create a Decent Sampler drum kit preset with all the samples in this folder: ${samplesDirectory}
+Let's create a Decent Sampler drum kit preset with all the samples in this folder: C:/Samples
 
 When creating simple Decent Sampler drum presets, follow these guidelines:
 
@@ -35,7 +35,7 @@ The tool will generate a properly formatted preset with this basic structure. No
     <groups>
         <!-- Group all samples for a drum piece in a single group -->
         <group>
-            <sample path="${samplesDirectory}/Kick.wav" rootNote="36" />
+            <sample path="C:/Samples/Kick.wav" rootNote="36" />
             <!-- Add additional samples as needed -->
         </group>
     </groups>
@@ -51,4 +51,4 @@ The tool will generate a properly formatted preset with this basic structure. No
 - Focus on a minimal setup that maps samples to the correct root notes and provides a basic user interface.
 
 This approach ensures presets remain straightforward, reducing potential CPU overhead and avoiding unnecessary complexity. For advanced configurations or when additional processing is needed, refer to the full Decent Sampler documentation.
-`;
+`

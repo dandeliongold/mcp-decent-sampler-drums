@@ -1,6 +1,6 @@
 // @ts-nocheck
 export const ADVANCED_PRESET_PROMPT = `
-Let's create a Decent Sampler drum kit preset with all the samples in this folder: ${samplesDirectory}
+Let's create a Decent Sampler drum kit preset with all the samples in this folder: C:/Samples
 
 When creating Decent Sampler drum presets, follow these guidelines:
 
@@ -33,7 +33,7 @@ Use this with AdvancedDrumKitConfig for complex setups combining multiple featur
       "rootNote": 36,
       "samples": [
         {
-          "path": "${samplesDirectory}/Kick_Close_Soft.wav",
+          "path": "C:/Samples/Kick_Close_Soft.wav",
           "micConfig": {
             "position": "close",
             "busIndex": 0
@@ -69,7 +69,7 @@ b) configure_drum_controls - Add ADSR and pitch controls:
 
 c) configure_round_robin - Set up sample alternation:
 {
-  "directory": "${samplesDirectory}",
+  "directory": "C:/Samples",
   "mode": "round_robin",
   "length": 3,
   "samples": [
@@ -153,10 +153,10 @@ IMPORTANT: All Decent Sampler preset files MUST use the .dspreset file extension
   * etc.
 - Include all mic positions in the same group, for example:
   <group>
-    <sample path="${samplesDirectory}/Kick_Close.wav" rootNote="36" />
-    <sample path="${samplesDirectory}/Kick_OH_L.wav" rootNote="36" />
-    <sample path="${samplesDirectory}/Kick_OH_R.wav" rootNote="36" />
-    <sample path="${samplesDirectory}/Kick_Room.wav" rootNote="36" />
+    <sample path="C:/Samples/Kick_Close.wav" rootNote="36" />
+    <sample path="C:/Samples/Kick_OH_L.wav" rootNote="36" />
+    <sample path="C:/Samples/Kick_OH_R.wav" rootNote="36" />
+    <sample path="C:/Samples/Kick_Room.wav" rootNote="36" />
   </group>
 
 5. Multi-mic Setup:
@@ -167,7 +167,7 @@ IMPORTANT: All Decent Sampler preset files MUST use the .dspreset file extension
 
 IMPORTANT: **Bus volume control**  
 - Each bus volume must be bound to parameter="BUS_VOLUME", type="amp", level="bus", and use the correct bus index (0-based).
-- If your UI knob uses a dB range (e.g., -96 to 12) but Decent Sampler’s bus volume is linear (0-16), apply linear translation. For example:
+- If your UI knob uses a dB range (e.g., -96 to 12) but Decent Sampler's bus volume is linear (0-16), apply linear translation. For example:
   \`\`\`xml
   <labeled-knob label="Close Mic" type="float" minValue="-96" maxValue="12" value="0">
       <binding
