@@ -39,15 +39,33 @@ server.setRequestHandler(ListPromptsRequestSchema, async () => {
       {
         name: "advanced_preset_guidelines",
         description: "Guidelines for structuring complex Decent Sampler preset files including support for buses, round robin, velocity layers, etc.",
+        arguments: [{
+          name: "samplesDirectory",
+          description: "Absolute path to the directory containing drum samples",
+          required: true
+        }]
       },{
         name: "simple_preset_guidelines",
         description: "Guidelines for structuring simple Decent Sampler preset files.",
+        arguments: [{
+          name: "samplesDirectory",
+          description: "Absolute path to the directory containing drum samples",
+          required: true
+        }]
       },
     ],
   };
 });
 
 server.setRequestHandler(GetPromptRequestSchema, async (request) => {
+  const samplesDirectory = request.params.arguments?.samplesDirectory;
+  if (!samplesDirectory || typeof samplesDirectory !== 'string') {
+    throw new McpError(
+      ErrorCode.InvalidParams,
+      "samplesDirectory argument is required and must be a string"
+    );
+  }
+
   if (request.params.name === "advanced_preset_guidelines") {
     return {
       messages: [
@@ -55,7 +73,7 @@ server.setRequestHandler(GetPromptRequestSchema, async (request) => {
           role: "user",
           content: {
             type: "text",
-            text: ADVANCED_PRESET_PROMPT,
+            text: ADVANCED_PRESET_PROMPT.replace(/C:\/Samples/g, samplesDirectory),
           },
         },
       ],
@@ -67,7 +85,7 @@ server.setRequestHandler(GetPromptRequestSchema, async (request) => {
           role: "user",
           content: {
             type: "text",
-            text: SIMPLE_PRESET_PROMPT,
+            text: SIMPLE_PRESET_PROMPT.replace(/C:\/Samples/g, samplesDirectory),
           },
         },
       ],

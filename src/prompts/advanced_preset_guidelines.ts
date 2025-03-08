@@ -1,5 +1,7 @@
 // @ts-nocheck
 export const ADVANCED_PRESET_PROMPT = `
+Let's create a Decent Sampler drum kit preset with all the samples in this folder: ${samplesDirectory}
+
 When creating Decent Sampler drum presets, follow these guidelines:
 
 For complete documentation, visit:
@@ -31,7 +33,7 @@ Use this with AdvancedDrumKitConfig for complex setups combining multiple featur
       "rootNote": 36,
       "samples": [
         {
-          "path": "C:/Samples/Kick_Close_Soft.wav",
+          "path": "${samplesDirectory}/Kick_Close_Soft.wav",
           "micConfig": {
             "position": "close",
             "busIndex": 0
@@ -67,7 +69,7 @@ b) configure_drum_controls - Add ADSR and pitch controls:
 
 c) configure_round_robin - Set up sample alternation:
 {
-  "directory": "C:/Samples",
+  "directory": "${samplesDirectory}",
   "mode": "round_robin",
   "length": 3,
   "samples": [
@@ -151,10 +153,10 @@ IMPORTANT: All Decent Sampler preset files MUST use the .dspreset file extension
   * etc.
 - Include all mic positions in the same group, for example:
   <group>
-    <sample path="Samples/Kick_Close.wav" rootNote="36" />
-    <sample path="Samples/Kick_OH_L.wav" rootNote="36" />
-    <sample path="Samples/Kick_OH_R.wav" rootNote="36" />
-    <sample path="Samples/Kick_Room.wav" rootNote="36" />
+    <sample path="${samplesDirectory}/Kick_Close.wav" rootNote="36" />
+    <sample path="${samplesDirectory}/Kick_OH_L.wav" rootNote="36" />
+    <sample path="${samplesDirectory}/Kick_OH_R.wav" rootNote="36" />
+    <sample path="${samplesDirectory}/Kick_Room.wav" rootNote="36" />
   </group>
 
 5. Multi-mic Setup:
