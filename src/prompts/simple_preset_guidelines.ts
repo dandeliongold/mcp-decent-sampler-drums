@@ -44,7 +44,7 @@ The tool will generate a properly formatted preset with this basic structure. No
 3. Group Organization and Sample Configuration:
 - Place all samples for a single drum piece (or mic position) in one group to avoid voice conflicts.
 - Use standard MIDI mappings (e.g., Kick = 36, Snare = 38, Hi-hat Closed = 42, etc.).
-- Omit velocity layers if not required. Without explicit velocity ranges, samples will respond uniformly to all velocities.
+- You must omit velocity layers if not required or indicated in the sample naming. Without explicit velocity ranges, samples will respond uniformly to all velocities.
 
 4. Keep It Simple:
 - Do not add any <buses> or <effects> sections unless you are creating a more advanced preset.
