@@ -1,6 +1,6 @@
 // @ts-nocheck
 export const ADVANCED_PRESET_PROMPT = `
-Let's create a Decent Sampler drum kit preset with all the samples in this folder: C:/Samples
+Let's create a Decent Sampler drum kit preset using all of the samples in this folder: C:/Samples
 
 When creating Decent Sampler drum presets, follow these guidelines:
 
@@ -105,7 +105,7 @@ IMPORTANT: All Decent Sampler preset files MUST use the .dspreset file extension
     <ui>
         <!-- UI elements first -->
         <keyboard>
-            <!-- Optional: Color-code drum mapping -->
+            <!-- Color-code drum mapping -->
             <color loNote="36" hiNote="38" color="FF2C365E" /> <!-- Kicks/Snares -->
             <color loNote="42" hiNote="44" color="FF6D9DC5" /> <!-- Hi-hats -->
         </keyboard>
@@ -225,4 +225,8 @@ When effects are specifically requested, follow these guidelines:
   * Group related samples together
   * Use proper voice muting
   * Consider CPU impact of effects
+
+8. UI Optimization
+- When configuring colors for keys, only color keys that have samples mapped to them.
+- Do not color note ranges unless every key in the range has a sample.
 `
