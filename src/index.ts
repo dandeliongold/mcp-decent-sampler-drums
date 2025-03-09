@@ -23,7 +23,7 @@ import { MicBusConfig, DrumMicConfig, validateMicRouting } from './mic-routing.j
 const server = new Server(
   {
     name: "decent-sampler-drums",
-    version: "0.1.2",
+    version: "0.1.3",
   },
   {
     capabilities: {
