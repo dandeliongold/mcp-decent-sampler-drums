@@ -1,8 +1,8 @@
 # Decent Sampler Drums MCP Server
 
-A Model Context Protocol server for generating DecentSampler drum kit configurations.
+A Model Context Protocol server for generating [Decent Sampler](https://www.decentsamples.com/product/decent-sampler-plugin/) drum kit configurations.
 
-This TypeScript-based MCP server provides tools for working with DecentSampler drum kit presets, including WAV file analysis and XML generation.
+This TypeScript-based MCP server provides specialized tools and prompts for creating DecentSampler drum kit presets, including WAV file analysis and XML generation.
 
 <a href="https://glama.ai/mcp/servers/phypkuqwcn"><img width="380" height="200" src="https://glama.ai/mcp/servers/phypkuqwcn/badge" alt="Decent-Sampler Drums Server MCP server" /></a>
 
