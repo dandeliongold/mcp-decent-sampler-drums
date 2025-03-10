@@ -56,7 +56,13 @@ The tool will generate a properly formatted preset with this basic structure. No
 - You must omit velocity layers if not required or indicated in the sample naming. Without explicit velocity ranges, samples will respond uniformly to all velocities.
 - Assign only one sample per key, unless working with velocity-specific versions of the same drum sound.
 
-4. Keep It Simple:
+4. For round robin setup, use the configure_round_robin tool with desired mode:
+  * "round_robin" - Cycle through samples sequentially - this is the default unless otherwise specified by the user.
+  * "random" - Choose samples randomly
+  * "true_random" - Allow same sample to play twice
+  * "always" - Always play all samples
+
+5. Keep It Simple:
 - Do not add any <buses> or <effects> sections unless you are creating a more advanced preset.
 - Focus on a minimal setup that maps samples to notes on the keyboard and provides a basic user interface.
 - If multiple microphone positions and/or other complex sets of samples are provided, clarify with the user how to proceed with configuration.
