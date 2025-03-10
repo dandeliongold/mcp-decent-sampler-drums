@@ -95,7 +95,10 @@ d) configure_mic_routing - Set up multi-mic mixing:
   ]
 }
 
-IMPORTANT: Do not add any effects (reverb, delay, etc.) unless explicitly requested. Effects can significantly impact CPU usage and may not be desired in all use cases.
+IMPORTANT: 
+- Do not add any effects (reverb, delay, etc.) OR ADSR settings unless explicitly requested.
+- Effects can significantly impact CPU usage and may not be desired in all use cases.
+- Do not add any micBuses or other complex routing unless explicitly requested.
 
 IMPORTANT: All Decent Sampler preset files MUST use the .dspreset file extension.
 
@@ -111,7 +114,7 @@ IMPORTANT: All Decent Sampler preset files MUST use the .dspreset file extension
         </keyboard>
     </ui>
     <buses>
-        <!-- Define routing and effects buses -->
+        <!-- Define routing and effects buses if requested -->
         <bus busVolume="0.5" output1Target="MAIN_OUTPUT" output2Target="AUX_STEREO_OUTPUT_1">
             <effects>
                 <!-- Bus-level effects -->
@@ -151,6 +154,7 @@ IMPORTANT: All Decent Sampler preset files MUST use the .dspreset file extension
   * Hi-hat Closed = 42
   * Hi-hat Open = 46
   * etc.
+- If there are too many drum variations to map to standard MIDI mapping, you can use multiple octaves to accomodate different variations
 - Include all mic positions in the same group, for example:
   <group>
     <sample path="C:/Samples/Kick_Close.wav" rootNote="36" />
@@ -160,10 +164,10 @@ IMPORTANT: All Decent Sampler preset files MUST use the .dspreset file extension
   </group>
 
 5. Multi-mic Setup:
-- Use the configure_mic_routing tool to:
+- If and when mic routing is specifically requested, use the configure_mic_routing tool to:
   * Route each mic position to separate buses
   * Set up volume controls with MIDI CC mapping
-  * Configure auxiliary outputs for DAW mixing
+  * Configure auxiliary outputs to support mixing mic volumes in the host Digital Audio Workstation (DAW)
 
 IMPORTANT: **Bus volume control**  
 - Each bus volume must be bound to parameter="BUS_VOLUME", type="amp", level="bus", and use the correct bus index (0-based).
@@ -183,7 +187,7 @@ IMPORTANT: **Bus volume control**
 - Ensure you route samples to the correct bus outputs (e.g., output1Target="BUS_1") and map each bus to MAIN_OUTPUT or AUX_STEREO_OUTPUT_x as needed.
 
 6. Effects Guidelines:
-When effects are specifically requested, follow these guidelines:
+If and when effects are specifically requested, follow these guidelines:
 - Group-level effects (per-voice processing only):
   * Lowpass filter
   * Hipass filter
@@ -216,17 +220,7 @@ When effects are specifically requested, follow these guidelines:
   * Consider CPU impact of convolution effects
   * Delay and reverb cannot work as group-level effects
 
-7. Performance Optimization:
-- Set appropriate playbackMode for samples:
-  * memory
-  * disk_streaming
-  * auto (default)
-- Optimize voice usage:
-  * Group related samples together
-  * Use proper voice muting
-  * Consider CPU impact of effects
-
-8. UI Optimization
+7. UI Optimization
 - When configuring colors for keys, only color keys that have samples mapped to them.
 - Do not color note ranges unless every key in the range has a sample.
 `
