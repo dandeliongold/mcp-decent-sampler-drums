@@ -1,8 +1,10 @@
 // @ts-nocheck
 export const SIMPLE_PRESET_PROMPT = `
-Let's create a Decent Sampler drum kit preset using all of the samples in this folder: C:/Samples
+Let's create a Decent Sampler drum kit preset using all of the samples in this folder: C:/Samples  
 
-When creating simple Decent Sampler drum presets, follow these guidelines:
+Ensure that you exhaustively list all of the files in the provided directory before proceeding to build out the preset.  
+
+When creating simple Decent Sampler drum presets, follow these guidelines:  
 
 IMPORTANT: Use the generate_drum_groups tool with the basic configuration option to create simple, lightweight presets. 
 
@@ -22,7 +24,8 @@ The recommended way to create simple presets is using the generate_drum_groups t
 The basic configuration requires:
 - Essential fields only: name, rootNote, and sample paths
 - Optional velocity layers through globalSettings if needed
-- No advanced features like round robin, mic routing, or muting groups
+- Optional round robin configuration if needed and/or specified by the user
+- No advanced features like mic routing or muting groups
 
 Refer to the generate_drum_groups tool documentation for configuration examples and schema details.
 
@@ -55,7 +58,8 @@ The tool will generate a properly formatted preset with this basic structure. No
 
 4. Keep It Simple:
 - Do not add any <buses> or <effects> sections unless you are creating a more advanced preset.
-- Focus on a minimal setup that maps samples to the correct root notes and provides a basic user interface.
+- Focus on a minimal setup that maps samples to notes on the keyboard and provides a basic user interface.
+- If multiple microphone positions and/or other complex sets of samples are provided, clarify with the user how to proceed with configuration.
 
 This approach ensures presets remain straightforward, reducing potential CPU overhead and avoiding unnecessary complexity. For advanced configurations or when additional processing is needed, refer to the full Decent Sampler documentation.
 `
