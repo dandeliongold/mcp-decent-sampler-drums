@@ -9,7 +9,7 @@ export function generateGroupsXml(config: BasicDrumKitConfig | AdvancedDrumKitCo
   const busesXml = 'micBuses' in globalSettings && globalSettings.micBuses ? 
     configureMicBuses(globalSettings.micBuses) : '';
   
-  // Add round robin attributes to top-level groups if configured (advanced only)
+  // Add round robin attributes to top-level groups if configured
   const roundRobinAttrs = 'roundRobin' in globalSettings && globalSettings.roundRobin
     ? ` seqMode="${globalSettings.roundRobin.mode}"${
         globalSettings.roundRobin.length 
@@ -26,7 +26,7 @@ export function generateGroupsXml(config: BasicDrumKitConfig | AdvancedDrumKitCo
       ? ` tags="${piece.muting.tags.join(',')}" silencedByTags="${piece.muting.silencedByTags.join(',')}" silencingMode="fast"`
       : '';
     
-    // Add group-level round robin settings if present (advanced only)
+    // Add group-level round robin settings if present
     if ('seqMode' in piece && piece.seqMode) {
       groupAttrs += ` seqMode="${piece.seqMode}"`;
     }
@@ -76,7 +76,7 @@ export function generateGroupsXml(config: BasicDrumKitConfig | AdvancedDrumKitCo
         }
       }
       
-      // Add sample-level round robin settings (advanced only)
+      // Add sample-level round robin settings
       let sampleRRAttrs = '';
       if ('seqMode' in sample && sample.seqMode) {
         sampleRRAttrs += ` seqMode="${sample.seqMode}"`;
