@@ -168,7 +168,9 @@ IMPORTANT: All Decent Sampler preset files MUST use the .dspreset file extension
   * Route each mic position to separate buses
   * Set up volume controls with MIDI CC mapping
   * Configure auxiliary outputs to support mixing mic volumes in the host Digital Audio Workstation (DAW)
-
+- NOTE on file and/or folder naming conventions:
+  * Keep in mind that mic positions indicated in the file and/or folder name might include a drum name.  For example: there might be a "kick" mic indicated for multiple drums besides the kick drum.
+  * If in doubt, you may assume that the actual name of the drum piece is in the first part of the file name OR you can ask the user for clarification if less than 80% certain.
 IMPORTANT: **Bus volume control**  
 - Each bus volume must be bound to parameter="BUS_VOLUME", type="amp", level="bus", and use the correct bus index (0-based).
 - If your UI knob uses a dB range (e.g., -96 to 12) but Decent Sampler's bus volume is linear (0-16), apply linear translation. For example:
